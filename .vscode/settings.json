@@ -60,6 +60,18 @@
         "codecvt": "cpp",
         "unordered_map": "cpp",
         "map": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "array": "cpp",
+        "functional": "cpp",
+        "future": "cpp",
+        "ratio": "cpp",
+        "condition_variable": "cpp",
+        "coroutine": "cpp",
+        "forward_list": "cpp",
+        "mutex": "cpp",
+        "set": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp",
+        "unordered_set": "cpp"
     }
 }
