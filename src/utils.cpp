@@ -27,12 +27,12 @@ void format_text(UnicodeString &text) {
         UChar character = text[i];
 
         // Verifica se o caractere não é alfanumérico.
-        if (!u_isalnum(character)) {
+        if (!u_isalpha(character)) {
             // Verifica se o caractere atual é um hífen entre duas palavras
             // alfanuméricas.
             bool is_hyphen_between_words =
-                (character == '-') && (i > 0 && u_isalnum(text[i - 1])) &&
-                (i < text.length() - 1 && u_isalnum(text[i + 1]));
+                (character == '-') && (i > 0 && u_isalpha(text[i - 1])) &&
+                (i < text.length() - 1 && u_isalpha(text[i + 1]));
 
             // Se o hífen não estiver entre duas palavras, substitui o caractere
             // por um espaço.
