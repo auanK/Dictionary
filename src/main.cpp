@@ -18,7 +18,7 @@ int main() {
 
     dictionary<avl_tree<UnicodeString, unicode_compare>> dict(collator);
 
-    stringstream file = read_file("in/file.txt");
+    stringstream file = read_file("in/memorias_postumas_de_braz_cubas.txt");
     string word;
     while (file >> word) {
         dict.insert(UnicodeString::fromUTF8(StringPiece(word)));
@@ -26,8 +26,10 @@ int main() {
 
     string list;
     dict.list().toUTF8String(list);
-    cout << list << endl;
+    // cout << list << endl;
     cout << dict.comparisons() << endl;
+
+    write_file("out/memorias_postumas_de_braz_cubas.txt", dict.list());
 
     delete collator;
 
