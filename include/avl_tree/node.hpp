@@ -3,7 +3,7 @@
 template <typename type>
 struct node {
     type key;             // Chave do nó
-    unsigned freq;        // Frequência em que a chave aparece
+    unsigned int freq;    // Frequência em que a chave aparece
     unsigned int height;  //  Altura do nó
     node* left;           // Ponteiro para o filho esquerdo
     node* right;          // Ponteiro para o filho direito

@@ -7,6 +7,8 @@
 
 #include "node.hpp"
 
+using namespace icu;
+
 // Functor padrão para comparar tipos genéricos onde suportam operador '<'
 template <typename type>
 struct default_compare {
@@ -21,13 +23,12 @@ struct unicode_compare {
     icu::Collator* collator;  // Ponteiro para o Collator que faz a comparação
 
     // Construtor que define o Collator
-    unicode_compare(icu::Collator* coll) { 
-        collator = coll; 
-    }
+    unicode_compare(icu::Collator* coll) { collator = coll; }
 
     // Compara duas strings Unicode usando o Collator
-    bool operator()(const icu::UnicodeString& lhs, const icu::UnicodeString& rhs) const {
-        UErrorCode status = U_ZERO_ERROR;  // Código de erro para operações ICU
+    bool operator()(const icu::UnicodeString& lhs,
+                    const icu::UnicodeString& rhs) const {
+        UErrorCode status = U_ZERO_ERROR;
         return collator->compare(lhs, rhs, status) < 0;
     }
 };
@@ -225,6 +226,45 @@ class avl_tree {
         return _search(n->right, key);
     }
 
+    // Retorna o nó com a menor chave
+    node<type>* _minimum(node<type>* n) {
+        while (n->left != nullptr) {
+            n = n->left;
+        }
+        return n;
+    }
+
+    // Retorna o nó com a maior chave
+    node<type>* _maximum(node<type>* n) {
+        while (n->right != nullptr) {
+            n = n->right;
+        }
+        return n;
+    }
+
+    // Retorna uma string com as chaves da árvore em ordem alfabética
+    std::string _list(node<type>* n) {
+        if (n == nullptr) {
+            return "";
+        }
+
+        std::string list = _list(n->left);
+
+        // Em tempo de compilação, verifica se o tipo é UnicodeString para
+        // fazer a conversão correta
+        if constexpr (std::is_same<type, icu::UnicodeString>::value) {
+            std::string utf8_string;
+            n->key.toUTF8String(utf8_string);
+            list += utf8_string + " (" + std::to_string(n->freq) + ") \n";
+        } else {
+            list += n->key + " (" + std::to_string(n->freq) + ") \n";
+        }
+
+        list += _list(n->right);
+
+        return list;
+    }
+
     // Imprime a árvore na tela
     void bshow(node<type>* n, std::string heranca) {
         if (n != nullptr && (n->left != nullptr || n->right != nullptr)) {
@@ -241,7 +281,8 @@ class avl_tree {
             return;
         }
 
-        // Em tempo de compilação, verifica se o tipo é UnicodeString para imprimir corretamente
+        // Em tempo de compilação, verifica se o tipo é UnicodeString para
+        // imprimir corretamente
         if constexpr (std::is_same<type, icu::UnicodeString>::value) {
             std::string utf8_string;
             n->key.toUTF8String(utf8_string);
@@ -256,55 +297,80 @@ class avl_tree {
     }
 
    public:
-    // Construtor padrão
-    avl_tree() {
-        _root = nullptr;
-        _size = 0;
-    }
-
-    // Construtor com suporte para comparador personalizado
+    // Construtor com suporte para passar um functor de comparação
+    // Se não for passado, usa o default_compare
     avl_tree(compare comp = compare()) : _compare(comp) {
         _root = nullptr;
         _size = 0;
     }
 
     // Destrutor
-    ~avl_tree() { 
-        _clear(_root); 
-    }
+    ~avl_tree() { _clear(_root); }
 
     // Insere um nó na árvore
-    void insert(type key) { 
-        _root = _insert(_root, key); 
-    }
+    void insert(type key) { _root = _insert(_root, key); }
 
     // Remove um nó da árvore
-    void remove(type key) { 
-        _root = _remove(_root, key); 
-    }
-
-    // Verifica se a árvore está vazia
-    bool empty() const { 
-        return _size == 0; 
-    }
+    void remove(type key) { _root = _remove(_root, key); }
 
     // Retorna o tamanho da árvore
-    unsigned int size() const { 
-        return _size; 
-    }
+    unsigned int size() { return _size; }
+
+    // Verifica se a árvore está vazia
+    bool empty() const { return _size == 0; }
 
     // Retorna a altura da árvore
-    unsigned int height() const { 
-        return _height(_root); 
-    }
+    unsigned int height() const { return _height(_root); }
 
     // Verifica se a árvore contém uma chave
-    bool contains(type key) { 
-        return _search(_root, key) != nullptr; 
+    bool contains(type key) { return _search(_root, key) != nullptr; }
+
+    // Retorna um vetor com a chave e a frequência do nó com a menor chave
+    type* minimum() {
+        if (_root == nullptr) {
+            return nullptr;
+        }
+
+        node<type>* min_node = _minimum(_root);
+        return new type[2]{min_node->key, min_node->freq};
     }
 
-    // Imprime a árvore na tela
-    void show() { 
-        bshow(_root, ""); 
+    // Retorna um vetor com a chave e a frequência do nó com a maior chave
+    type* maximum() {
+        if (_root == nullptr) {
+            return nullptr;
+        }
+
+        node<type>* max_node = _maximum(_root);
+        return new type[2]{max_node->key, max_node->freq};
     }
+
+    // Retorna a frequência de uma chave(0 se não existir)
+    unsigned int freq(type key) {
+        node<type>* n = _search(_root, key);
+        if (n == nullptr) {
+            return 0;
+        }
+
+        return n->freq;
+    }
+
+    void att(type key, unsigned int new_freq) {
+        node<type>* n = _search(_root, key);
+        if (n == nullptr) {
+            return;
+        }
+
+        if (new_freq == 0) {
+            _root = _remove(_root, key);
+        } else {
+            n->freq = new_freq;
+        }
+    }
+
+    // Retorna uma string com as chaves da árvore em ordem alfabética
+    std::string list() { return _list(_root); }
+
+    // Imprime a árvore na tela em formato de árvore binária
+    void show() { bshow(_root, ""); }
 };
