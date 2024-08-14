@@ -37,12 +37,14 @@ struct unicode_compare {
 template <typename type, typename compare = default_compare<type>>
 class avl_tree {
    private:
-    node<type>* _root = nullptr;  // Raiz da árvore
-    unsigned int _size = 0;       // Número de nós na árvore
-    compare _compare;             // Functor de comparação
+    node<type>* _root = nullptr;    // Raiz da árvore
+    unsigned int _size = 0;         // Número de nós na árvore
+    compare _compare;               // Functor de comparação
+    unsigned int _comparisons = 0;  // Número de comparações feitas
 
     // Limpa a árvore, percorrendo os nós em pós-ordem
     void _clear(node<type>* root) {
+        _comparisons++;
         if (root == nullptr) {
             return;
         }
@@ -92,15 +94,19 @@ class avl_tree {
     // Insere um nó na árvore
     node<type>* _insert(node<type>* p, type key) {
         // Se chegou em uma folha, insere o nó e incrementa o tamanho da árvore
+        //
+        _comparisons++;
         if (p == nullptr) {
             _size++;
             return new node<type>(key);
         }
 
+        _comparisons++;
         // Busca binária para encontrar a posição correta do nó
         if (_compare(key, p->key)) {
             p->left = _insert(p->left, key);
         } else if (_compare(p->key, key)) {
+            _comparisons++;
             p->right = _insert(p->right, key);
         } else {
             p->freq++;
@@ -119,19 +125,23 @@ class avl_tree {
 
         int bal = _balance(p);
 
+        _comparisons++;
         if (bal < -1 && _compare(key, p->left->key)) {
             return _right_rotation(p);
         }
 
+        _comparisons++;
         if (bal < -1 && _compare(p->left->key, key)) {
             p->left = _left_rotation(p->left);
             return _right_rotation(p);
         }
 
+        _comparisons++;
         if (bal > 1 && _compare(p->right->key, key)) {
             return _left_rotation(p);
         }
 
+        _comparisons++;
         if (bal > 1 && _compare(key, p->right->key)) {
             p->right = _right_rotation(p->right);
             return _left_rotation(p);
@@ -142,15 +152,19 @@ class avl_tree {
 
     // Remove um nó da árvore
     node<type>* _remove(node<type>* n, type key) {
+        _comparisons++;
         if (n == nullptr) {
             return nullptr;
         }
 
+        _comparisons++;
         if (_compare(key, n->key)) {
             n->left = _remove(n->left, key);
         } else if (_compare(n->key, key)) {
+            _comparisons++;
             n->right = _remove(n->right, key);
         } else if (n->right == nullptr) {
+            _comparisons++;
             node<type>* temp = n->left;
             delete n;
             _size--;
@@ -167,6 +181,7 @@ class avl_tree {
 
     // Remove o sucessor de um nó
     node<type>* _remove_successor(node<type>* n, node<type>* successor) {
+        _comparisons++;
         if (successor->left != nullptr) {
             successor->left = _remove_successor(n, successor->left);
         } else {
@@ -181,6 +196,7 @@ class avl_tree {
 
     // Corrige o balanceamento de um nó após uma remoção
     node<type>* _fixup_deletion(node<type>* n) {
+        _comparisons++;
         if (n == nullptr) {
             return nullptr;
         }
@@ -189,19 +205,23 @@ class avl_tree {
 
         int bal = _balance(n);
 
+        _comparisons++;
         if (bal > 1 && _balance(n->right) >= 0) {
             return _left_rotation(n);
         }
 
+        _comparisons++;
         if (bal > 1 && _balance(n->right) < 0) {
             n->right = _right_rotation(n->right);
             return _left_rotation(n);
         }
 
+        _comparisons++;
         if (bal < -1 && _balance(n->left) <= 0) {
             return _right_rotation(n);
         }
 
+        _comparisons++;
         if (bal < -1 && _balance(n->left) > 0) {
             n->left = _left_rotation(n->left);
             return _right_rotation(n);
@@ -212,14 +232,17 @@ class avl_tree {
 
     // Busca uma chave na árvore
     node<type>* _search(node<type>* n, type key) {
+        _comparisons++;
         if (n == nullptr) {
             return nullptr;
         }
 
+        _comparisons++;
         if (!_compare(key, n->key) && !_compare(n->key, key)) {
             return n;
         }
 
+        _comparisons++;
         if (_compare(key, n->key)) {
             return _search(n->left, key);
         }
@@ -373,4 +396,7 @@ class avl_tree {
 
     // Imprime a árvore na tela em formato de árvore binária
     void show() { bshow(_root, ""); }
+
+    // Retorna o número de comparações feitas
+    unsigned int comparisons() const { return _comparisons; }
 };

@@ -27,6 +27,7 @@ int main() {
     string list;
     dict.list().toUTF8String(list);
     cout << list << endl;
+    cout << dict.comparisons() << endl;
 
     delete collator;
 

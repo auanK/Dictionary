@@ -62,4 +62,6 @@ class dictionary {
     // Exibe o dicionário em forma de árvore
     // Método temporário (Para testes da AVL e Red-Black)
     void show() { _dict.show(); }
+
+    unsigned int comparisons() { return _dict.comparisons(); }
 };
