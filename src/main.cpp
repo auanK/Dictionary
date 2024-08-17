@@ -8,15 +8,8 @@ using namespace std;
 using namespace icu;
 
 int main() {
-    UErrorCode status = U_ZERO_ERROR;
-    Collator* collator = Collator::createInstance(status);
 
-    if (U_FAILURE(status)) {
-        cerr << "Erro ao criar o Collator: " << u_errorName(status) << endl;
-        return 1;
-    }
-
-    dictionary<avl_tree<UnicodeString, unicode_compare>> dict(collator);
+    dictionary<avl_tree<UnicodeString, unicode_compare>> dict;
 
     stringstream file = read_file("in/memorias_postumas_de_braz_cubas.txt");
     string word;
@@ -24,14 +17,11 @@ int main() {
         dict.insert(UnicodeString::fromUTF8(StringPiece(word)));
     }
 
-    string list;
-    dict.list().toUTF8String(list);
-    // cout << list << endl;
-    cout << dict.comparisons() << endl;
+    string dict_list;
+    UnicodeString list = dict.list();
+    list.toUTF8String(dict_list);
 
-    write_file("out/memorias_postumas_de_braz_cubas.txt", dict.list());
-
-    delete collator;
+    cout << dict_list << endl;
 
     return 0;
 }

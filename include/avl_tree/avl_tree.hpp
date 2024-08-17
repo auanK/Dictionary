@@ -22,8 +22,10 @@ struct default_compare {
 struct unicode_compare {
     icu::Collator* collator;  // Ponteiro para o Collator que faz a comparação
 
-    // Construtor que define o Collator
-    unicode_compare(icu::Collator* coll) { collator = coll; }
+    unicode_compare() {
+        UErrorCode status = U_ZERO_ERROR;
+        collator = icu::Collator::createInstance(status);
+    }
 
     // Compara duas strings Unicode usando o Collator
     bool operator()(const icu::UnicodeString& lhs,
@@ -328,7 +330,10 @@ class avl_tree {
     }
 
     // Destrutor
-    ~avl_tree() { _clear(_root); }
+    ~avl_tree() {
+        _clear(_root);
+        delete _compare.collator;
+    }
 
     // Insere um nó na árvore
     void insert(type key) { _root = _insert(_root, key); }

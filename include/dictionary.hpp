@@ -18,9 +18,7 @@ class dictionary {
 
    public:
     // Construtor
-    dictionary(icu::Collator* collator) : _dict(unicode_compare(collator)) {}
-
-    ~dictionary() {}
+    dictionary() {}
 
     // Insere uma palavra no dicionário
     void insert(const icu::UnicodeString& word) { _dict.insert(word); }
