@@ -316,7 +316,9 @@ class avl_tree {
     // Destrutor
     ~avl_tree() {
         _clear(_root);
-        delete _compare.collator;
+        if constexpr (std::is_same_v<compare, unicode_compare>) {
+            delete _compare.collator;
+        }
     }
 
     // Insere um nó na árvore
