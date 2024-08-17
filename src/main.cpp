@@ -8,7 +8,6 @@ using namespace std;
 using namespace icu;
 
 int main() {
-
     dictionary<avl_tree<UnicodeString, unicode_compare>> dict;
 
     stringstream file = read_file("in/memorias_postumas_de_braz_cubas.txt");

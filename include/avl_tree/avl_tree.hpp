@@ -251,22 +251,6 @@ class avl_tree {
         return _search(n->right, key);
     }
 
-    // Retorna o nó com a menor chave
-    node<type>* _minimum(node<type>* n) {
-        while (n->left != nullptr) {
-            n = n->left;
-        }
-        return n;
-    }
-
-    // Retorna o nó com a maior chave
-    node<type>* _maximum(node<type>* n) {
-        while (n->right != nullptr) {
-            n = n->right;
-        }
-        return n;
-    }
-
     // Retorna uma string com as chaves da árvore em ordem alfabética
     std::string _list(node<type>* n) {
         if (n == nullptr) {
@@ -353,26 +337,6 @@ class avl_tree {
     // Verifica se a árvore contém uma chave
     bool contains(type key) { return _search(_root, key) != nullptr; }
 
-    // Retorna um vetor com a chave e a frequência do nó com a menor chave
-    type* minimum() {
-        if (_root == nullptr) {
-            return nullptr;
-        }
-
-        node<type>* min_node = _minimum(_root);
-        return new type[2]{min_node->key, min_node->freq};
-    }
-
-    // Retorna um vetor com a chave e a frequência do nó com a maior chave
-    type* maximum() {
-        if (_root == nullptr) {
-            return nullptr;
-        }
-
-        node<type>* max_node = _maximum(_root);
-        return new type[2]{max_node->key, max_node->freq};
-    }
-
     // Retorna a frequência de uma chave(0 se não existir)
     unsigned int freq(type key) {
         node<type>* n = _search(_root, key);
@@ -383,6 +347,7 @@ class avl_tree {
         return n->freq;
     }
 
+    // Atualiza a frequência de uma chave
     void att(type key, unsigned int new_freq) {
         node<type>* n = _search(_root, key);
         if (n == nullptr) {

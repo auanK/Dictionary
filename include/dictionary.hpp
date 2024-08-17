@@ -37,12 +37,6 @@ class dictionary {
         return _dict.contains(word);
     }
 
-    // Retorna a menor palavra do dicionário(lexicograficamente)
-    icu::UnicodeString minimun() { return _dict.minimun(); }
-
-    // Retorna a maior palavra do dicionário(lexicograficamente)
-    icu::UnicodeString maximum() { return _dict.maximum(); }
-
     // Atualiza a frequência de uma palavra
     void att(const icu::UnicodeString& word, int att) { _dict.att(word, att); }
 
