@@ -1,3 +1,5 @@
+#pragma once
+
 #include <unicode/uchar.h>
 #include <unicode/ucnv.h>
 #include <unicode/unistr.h>
@@ -69,16 +71,14 @@ stringstream read_file(const string &file_path) {
     return stringstream(processed_content);
 }
 
-void write_file(const string &file_path, const UnicodeString &content) {
-    // Abre o arquivo
-    ofstream output_file(file_path);
+void write_file(const std::string &file_path, const std::string &content) {
+    std::ofstream output_file(file_path);
     if (!output_file.is_open()) {
-        cerr << "Error: Could not open file " << file_path << endl;
+        std::cerr << "Error: Could not open file " << file_path << std::endl;
         exit(1);
     }
 
-    string utf8_content;
-    content.toUTF8String(utf8_content);
-    output_file << utf8_content;
+    // Escreve o conteúdo no arquivo
+    output_file << content;
     output_file.close();
 }

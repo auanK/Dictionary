@@ -11,7 +11,8 @@ using namespace icu;
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        cerr << "Uso: " << argv[0] << " <modo_estrutura> <arquivo>" << endl;
+        cerr << "Uso: " << argv[0]
+             << " <modo_estrutura> <arquivo(deve estar na pasta in)>" << endl;
         return 1;
     }
 
@@ -25,18 +26,9 @@ int main(int argc, char* argv[]) {
 
     dictionary<avl_tree<UnicodeString, unicode_compare>> dict;
 
-    stringstream file = read_file(filename);
-    string word;
-    while (file >> word) {
-        dict.insert(UnicodeString::fromUTF8(StringPiece(word)));
-    }
-
-    cout << "Dicionário de palavras:" << endl;
-    string list;
-    UnicodeString words = dict.list();
-    words.toUTF8String(list);
-
-    cout << list;
+    stringstream file = read_file("in/" + filename);
+    dict.insert(file);
+    dict.save("out/" + filename);
 
     return 0;
 }

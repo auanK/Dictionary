@@ -390,6 +390,13 @@ class avl_tree {
     // Remove um nó da árvore
     void remove(type key) { _root = _remove(_root, key); }
 
+    // Limpa a árvore
+    void clear() {
+        _clear(_root);
+        _root = nullptr;
+        _size = 0;
+    }
+
     // Retorna o tamanho da árvore
     unsigned int size() { return _size; }
 

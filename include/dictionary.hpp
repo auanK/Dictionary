@@ -9,6 +9,8 @@
 #include <sstream>
 #include <string>
 
+#include "../src/utils.cpp"
+
 // Dicionário de palavras, template é o tipo de estrutura de dados que será
 // utilizada para armazenar as palavras.
 template <typename type>
@@ -23,8 +25,20 @@ class dictionary {
     // Insere uma palavra no dicionário
     void insert(const icu::UnicodeString& word) { _dict.insert(word); }
 
+    // Insere um StringStream no dicionário
+    void insert(std::stringstream& file) {
+        std::string word;
+        while (file >> word) {
+            _dict.insert(icu::UnicodeString::fromUTF8(
+                icu::StringPiece(word.c_str(), word.size())));
+        }
+    }
+
     // Remove uma palavra do dicionário
     void remove(const icu::UnicodeString& word) { _dict.remove(word); }
+
+    // Limpa o dicionário
+    void clear() { _dict.clear(); }
 
     // Retorna a quantidade de palavras diferentes no dicionário
     unsigned int size() { return _dict.size(); }
@@ -55,6 +69,29 @@ class dictionary {
                     "\n";
         }
         return list;
+    }
+
+    void print() {
+        std::cout << "Dicionário de palavras:\n\"Palavra\" - Frequência\n";
+        std::string list_str;
+        this->list().toUTF8String(list_str);
+        std::cout << list_str;
+    }
+
+    void save(const std::string& filename) {
+        std::string list_str = "";
+        list_str +=
+            "Tamanho do dicionário: " + std::to_string(this->size()) + "\n";
+        list_str += "Quantidade de comparações: " +
+                    std::to_string(this->comparisons()) + "\n\n";
+        list_str += "Dicionário de palavras:\n\"Palavra\" - Frequência\n";
+
+        // Convertendo UnicodeString para std::string
+        std::string list_content;
+        this->list().toUTF8String(list_content);
+        list_str += list_content;
+
+        write_file(filename, list_str);
     }
 
     // Exibe o dicionário em forma de árvore
