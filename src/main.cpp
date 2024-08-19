@@ -16,20 +16,12 @@ int main() {
         dict.insert(UnicodeString::fromUTF8(StringPiece(word)));
     }
 
-    avl_tree<UnicodeString, unicode_compare> tree;
+    cout << "Dicionário de palavras:\n";
+    string list;
+    UnicodeString words = dict.list();
+    words.toUTF8String(list);
 
-    tree.insert(UnicodeString("casa"));
-    tree.insert(UnicodeString("casa"));
-    tree.insert(UnicodeString("árvore"));
-    tree.insert(UnicodeString("floresta"));
-    tree.insert(UnicodeString("carro"));
-
-    for (auto it = tree.begin(); it != tree.end(); ++it) {
-        auto node = *it;
-        string utf8_key;
-        node.key.toUTF8String(utf8_key);
-        cout << "Chave: " << utf8_key << ", Frequência: " << node.freq << endl;
-    }
+    cout << list;
 
     return 0;
 }

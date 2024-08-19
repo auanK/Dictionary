@@ -45,10 +45,16 @@ class dictionary {
         return _dict.freq(word);
     }
 
-    // Retorna uma lista das palavras do dicionário
+    // Retorna uma lista das palavras do dicionário com suas frequências
     icu::UnicodeString list() {
-        std::string dict_list = _dict.list();
-        return icu::UnicodeString::fromUTF8(dict_list);
+        icu::UnicodeString list;
+        for (auto it = _dict.begin(); it != _dict.end(); ++it) {
+            auto node = *it;
+            list += "\"" + node.key + "\" - " +
+                    icu::UnicodeString::fromUTF8(std::to_string(node.freq)) +
+                    "\n";
+        }
+        return list;
     }
 
     // Exibe o dicionário em forma de árvore
