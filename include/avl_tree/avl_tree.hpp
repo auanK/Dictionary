@@ -3,6 +3,7 @@
 #include <unicode/unistr.h>
 
 #include <iostream>
+#include <stack>
 #include <string>
 
 #include "node.hpp"
@@ -320,6 +321,68 @@ class avl_tree {
             delete _compare.collator;
         }
     }
+
+    // Nó simples, usado para o iterador
+    struct simple_node {
+        type key;
+        unsigned int freq;
+    };
+
+    class iterator {
+       private:
+        node<type>* _current;            // Nó atual
+        std::stack<node<type>*> _stack;  // Pilha para percorrer a árvore
+
+        // Função auxiliar para empilhar os nós da subárvore esquerda
+        void push_left(node<type>* n) {
+            while (n != nullptr) {
+                _stack.push(n);
+                n = n->left;
+            }
+        }
+
+       public:
+        // Construtor do iterador
+        iterator(node<type>* root) {
+            push_left(root);
+            if (!_stack.empty()) {
+                _current = _stack.top();
+                _stack.pop();
+            } else {
+                _current = nullptr;
+            }
+        }
+
+        // Retorna o simple_node atual
+        simple_node operator*() const {
+            return {_current->key, _current->freq};
+        }
+
+        // Avança o iterador para o próximo nó
+        iterator& operator++() {
+            if (_current != nullptr) {
+                if (_current->right != nullptr) {
+                    push_left(_current->right);
+                }
+                if (!_stack.empty()) {
+                    _current = _stack.top();
+                    _stack.pop();
+                } else {
+                    _current = nullptr;
+                }
+            }
+            return *this;
+        }
+
+        // Verifica se o iterador chegou ao fim
+        bool operator!=(const iterator& other) const {
+            return _current != other._current;
+        }
+    };
+
+    // Funções begin e end para iniciar e terminar o iterador
+    iterator begin() { return iterator(_root); }
+    iterator end() { return iterator(nullptr); }
 
     // Insere um nó na árvore
     void insert(type key) { _root = _insert(_root, key); }

@@ -16,11 +16,20 @@ int main() {
         dict.insert(UnicodeString::fromUTF8(StringPiece(word)));
     }
 
-    string dict_list;
-    UnicodeString list = dict.list();
-    list.toUTF8String(dict_list);
+    avl_tree<UnicodeString, unicode_compare> tree;
 
-    cout << dict_list << endl;
+    tree.insert(UnicodeString("casa"));
+    tree.insert(UnicodeString("casa"));
+    tree.insert(UnicodeString("árvore"));
+    tree.insert(UnicodeString("floresta"));
+    tree.insert(UnicodeString("carro"));
+
+    for (auto it = tree.begin(); it != tree.end(); ++it) {
+        auto node = *it;
+        string utf8_key;
+        node.key.toUTF8String(utf8_key);
+        cout << "Chave: " << utf8_key << ", Frequência: " << node.freq << endl;
+    }
 
     return 0;
 }
