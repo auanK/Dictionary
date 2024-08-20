@@ -5,13 +5,18 @@
 #include <unicode/unistr.h>
 #include <unicode/ustream.h>
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 
+#include "../include/avl_tree/avl_tree.hpp"
+#include "../include/dictionary.hpp"
+
 using namespace std;
 using namespace icu;
+using namespace std::chrono;
 
 // Formata a UnicodeString para minúsculas e remove quaisquer caracteres que não
 // sejam alfanuméricos ou hífen
@@ -82,3 +87,15 @@ void write_file(const std::string &file_path, const std::string &content) {
     output_file << content;
     output_file.close();
 }
+
+// Função para exibir o uso correto do programa
+void display_usage(const char *program_name) {
+    cerr << "Uso: " << program_name
+         << " <modo_estrutura> <arquivo(deve estar na pasta in)>" << endl;
+}
+
+// Função para verificar a estrutura fornecida
+bool is_valid_structure(const string &mode_structure) {
+    return mode_structure == "dictionary_avl";
+}
+

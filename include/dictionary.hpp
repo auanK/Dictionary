@@ -78,12 +78,15 @@ class dictionary {
         std::cout << list_str;
     }
 
-    void save(const std::string& filename) {
+    void save(const std::string& filename, std::chrono::milliseconds duration) {
         std::string list_str = "";
         list_str +=
             "Tamanho do dicionário: " + std::to_string(this->size()) + "\n";
         list_str += "Quantidade de comparações: " +
-                    std::to_string(this->comparisons()) + "\n\n";
+                    std::to_string(this->comparisons()) + "\n";
+        list_str +=
+            "Tempo para montar a tabela: " + std::to_string(duration.count()) +
+            " milissegundos\n\n";
         list_str += "Dicionário de palavras:\n\"Palavra\" - Frequência\n";
 
         // Convertendo UnicodeString para std::string
