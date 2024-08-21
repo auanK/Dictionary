@@ -255,7 +255,7 @@ class red_black_tree {
             return;
         }
 
-        std::cout << n->key << (n->color == RED ? "R" : "B") << std::endl;
+        std::cout << n->key << (n->color == RED ? "R" : "B") << "(" << n->freq << ")" << std::endl;
 
         if (n != _nil && (n->left != _nil || n->right != _nil)) {
             bshow(n->left, heranca + "l");  // Imprime o filho esquerdo
@@ -290,7 +290,8 @@ class red_black_tree {
             } else if (value > current->key) {
                 current = current->right;
             } else {
-                return;  // O valor já existe, não insere
+                current->freq++;
+                return;
             }
         }
 
