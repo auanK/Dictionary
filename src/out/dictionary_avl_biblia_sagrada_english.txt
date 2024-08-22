@@ -1,6 +1,6 @@
 Tamanho do dicionário: 16388
 Quantidade de comparações: 61514608
-Tempo para montar a tabela: 1104 milissegundos
+Tempo para montar a tabela: 1239 milissegundos
 
 Dicionário de palavras:
 "Palavra" - Frequência

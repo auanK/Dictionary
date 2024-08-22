@@ -96,7 +96,7 @@ void display_usage(const char *program_name) {
 }
 
 template <typename dict_type>
-void process_file_and_insert(dict_type& dict, const string& filename) {
+void process_file_and_insert(dict_type& dict, const string& filename, const string& mode_structure) {
     // Processa o arquivo
     stringstream file = read_file("in/" + filename);
 
@@ -112,5 +112,6 @@ void process_file_and_insert(dict_type& dict, const string& filename) {
     cout << dict.comparisons() << " comparações" << endl;
 
     // Salva o dicionário no arquivo
-    dict.save("out/" + filename, duration);
+    string out_filename = "out/" + mode_structure + "_" + filename;
+    dict.save(out_filename, duration);
 }
