@@ -37,13 +37,15 @@ struct unicode_compare {
 template <typename type, typename compare = default_compare<type>>
 class red_black_tree {
    private:
-    node<type> *_root;   // Ponteiro para a raiz da árvore
-    node<type> *_nil;    // Nó sentinela que representa nulo (nil)
-    unsigned int _size;  // Número de elementos na árvore
-    compare _compare;    // Functor de comparação
+    node<type> *_root;              // Ponteiro para a raiz da árvore
+    node<type> *_nil;               // Nó sentinela que representa nulo (nil)
+    unsigned int _size;             // Número de elementos na árvore
+    compare _compare;               // Functor de comparação
+    unsigned int _comparisons = 0;  // Número de comparações feitas
 
     // Limpa a árvore, percorrendo os nós em pós-ordem
     void _clear(node<type> *n) {
+        _comparisons++;
         if (n != _nil) {
             _clear(n->left);
             _clear(n->right);
@@ -55,16 +57,19 @@ class red_black_tree {
     void _left_rotate(node<type> *x) {
         node<type> *y = x->right;  // Salva o nó y (filho direito de x)
 
+        _comparisons++;
         // Redefine os filhos do nó x e do nó y
         x->right = y->left;
         if (y->left != _nil) {
             y->left->parent = x;  // Atualiza o pai do filho esquerdo de y
         }
 
+        _comparisons++;
         y->parent = x->parent;  // Atualiza o pai de y para o pai de x
         if (x->parent == _nil) {
             _root = y;  // Se x era a raiz, y se torna a nova raiz
         } else if (x == x->parent->left) {
+            _comparisons++;
             x->parent->left = y;  // Atualiza o filho esquerdo do pai de x
         } else {
             x->parent->right = y;  // Atualiza o filho direito do pai de x
@@ -79,16 +84,19 @@ class red_black_tree {
     void _right_rotate(node<type> *x) {
         node<type> *y = x->left;  // Salva o nó y (filho esquerdo de x)
 
+        _comparisons++;
         // Redefine os filhos do nó x e do nó y
         x->left = y->right;
         if (y->right != _nil) {
             y->right->parent = x;  // Atualiza o pai do filho direito de y
         }
 
+        _comparisons++;
         y->parent = x->parent;  // Atualiza o pai de y para o pai de x
         if (x->parent == _nil) {
             _root = y;  // Se x era a raiz, y se torna a nova raiz
         } else if (x == x->parent->left) {
+            _comparisons++;
             x->parent->left = y;  // Atualiza o filho esquerdo do pai de x
         } else {
             x->parent->right = y;  // Atualiza o filho direito do pai de x
@@ -119,8 +127,10 @@ class red_black_tree {
     // árvore rubro-negra
     void _insert_fixup(node<type> *z) {
         while (z->parent->color == RED) {
+            _comparisons++;
             if (z->parent == z->parent->parent->left) {
                 node<type> *y = z->parent->parent->right;  // Tio de z
+                _comparisons++;
                 if (y->color == RED) {
                     // Caso 1: O tio de z é vermelho
                     z->parent->color = BLACK;
@@ -128,6 +138,7 @@ class red_black_tree {
                     z->parent->parent->color = RED;
                     z = z->parent->parent;  // Move z para o avô
                 } else {
+                    _comparisons++;
                     if (z == z->parent->right) {
                         // Caso 2: z é o filho direito
                         z = z->parent;
@@ -140,6 +151,7 @@ class red_black_tree {
                 }
             } else {
                 node<type> *y = z->parent->parent->left;  // Tio de z
+                _comparisons++;
                 if (y->color == RED) {
                     // Caso 1: O tio de z é vermelho
                     z->parent->color = BLACK;
@@ -147,6 +159,7 @@ class red_black_tree {
                     z->parent->parent->color = RED;
                     z = z->parent->parent;  // Move z para o avô
                 } else {
+                    _comparisons++;
                     if (z == z->parent->left) {
                         // Caso 2: z é o filho esquerdo
                         z = z->parent;
@@ -158,6 +171,7 @@ class red_black_tree {
                     _left_rotate(z->parent->parent);  // Rotaciona à esquerda
                 }
             }
+            _comparisons++;
         }
         _root->color = BLACK;  // Garante que a raiz seja preta
     }
@@ -165,12 +179,14 @@ class red_black_tree {
     // Remove o nó z da árvore e ajusta a árvore para manter suas propriedades
     void _remove(node<type> *z) {
         node<type> *y, *x;
+        _comparisons++;
         if (z->left == _nil || z->right == _nil) {
             y = z;  // Caso em que z tem no máximo um filho
         } else {
             y = _minimum(z->right);  // Caso em que z tem dois filhos
         }
 
+        _comparisons++;
         // Define x como o filho de y
         if (y->left != _nil) {
             x = y->left;
@@ -178,16 +194,19 @@ class red_black_tree {
             x = y->right;
         }
 
+        _comparisons++;
         // Atualiza o pai de x
         x->parent = y->parent;
         if (y->parent == _nil) {
             _root = x;  // Se y era a raiz, x se torna a nova raiz
         } else if (y == y->parent->left) {
+            _comparisons++;
             y->parent->left = x;  // Atualiza o filho esquerdo do pai de y
         } else {
             y->parent->right = x;  // Atualiza o filho direito do pai de y
         }
-
+        
+        _comparisons++;
         // Copia o valor de y para z se necessário
         if (y != z) {
             z->key = y->key;
@@ -204,8 +223,10 @@ class red_black_tree {
     // árvore rubro-negra
     void _remove_fixup(node<type> *x) {
         while (x != _root && x->color == BLACK) {
+            _comparisons++;
             if (x == x->parent->left) {
                 node<type> *w = x->parent->right;  // Irmão de x
+                _comparisons++;
                 if (w->color == RED) {
                     // Caso 1: O irmão de x é vermelho
                     w->color = BLACK;
@@ -213,11 +234,13 @@ class red_black_tree {
                     _left_rotate(x->parent);  // Rotaciona à esquerda
                     w = x->parent->right;     // Atualiza w
                 }
+                _comparisons++;
                 if (w->left->color == BLACK && w->right->color == BLACK) {
                     // Caso 2: Ambos os filhos de w são pretos
                     w->color = RED;
                     x = x->parent;  // Move x para o pai
                 } else {
+                    _comparisons++;
                     if (w->right->color == BLACK) {
                         // Caso 3: O filho direito de w é preto
                         w->left->color = BLACK;
@@ -234,6 +257,7 @@ class red_black_tree {
                 }
             } else {
                 node<type> *w = x->parent->left;  // Irmão de x
+                _comparisons++;
                 if (w->color == RED) {
                     // Caso 1: O irmão de x é vermelho
                     w->color = BLACK;
@@ -241,11 +265,13 @@ class red_black_tree {
                     _right_rotate(x->parent);  // Rotaciona à direita
                     w = x->parent->left;       // Atualiza w
                 }
+                _comparisons += 2;
                 if (w->right->color == BLACK && w->left->color == BLACK) {
                     // Caso 2: Ambos os filhos de w são pretos
                     w->color = RED;
                     x = x->parent;  // Move x para o pai
                 } else {
+                    _comparisons++;
                     if (w->left->color == BLACK) {
                         // Caso 3: O filho esquerdo de w é preto
                         w->right->color = BLACK;
@@ -400,7 +426,7 @@ class red_black_tree {
     }
 
     // Atualiza a frequência de uma chave
-    void att (type key, unsigned int new_freq) {
+    void att(type key, unsigned int new_freq) {
         node<type> *n = _search(key);
         if (n == _nil) {
             return;
@@ -422,4 +448,7 @@ class red_black_tree {
 
     // Imprime a árvore de forma visual
     void print() { bshow(_root, ""); }
+
+    // Retorna o número de comparações feitas
+    unsigned int comparisons() { return _comparisons; }
 };
