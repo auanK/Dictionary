@@ -6,7 +6,6 @@
 #include <unicode/ustream.h>
 
 #include <iostream>
-#include <sstream>
 #include <string>
 
 #include "../src/utils.cpp"
@@ -25,55 +24,22 @@ class dictionary {
     // Insere uma palavra no dicionário
     void insert(const icu::UnicodeString& word) { _dict.insert(word); }
 
-    // Insere um texto no dicionário, formatando enquanto insere
-    void insert_text(icu::UnicodeString text) {
+    // Insere um texto no dicionário (o texto já deve estar formatado, contendo
+    // apenas espaços e palavras)
+    void insert_text(const icu::UnicodeString& text) {
         icu::UnicodeString word;
-        int32_t start = 0;
-        int32_t end = 0;
-
-        while (end < text.length()) {
-            UChar32 c = text.char32At(end);
-
-            // Converte o caractere para minúsculo, se necessário.
-            c = u_tolower(c);
-
-            // Verifica se o caractere é alfanumérico ou um hífen.
-            if (u_isUAlphabetic(c) || c == '-') {
-                // Verifica se o caractere atual é um hífen entre duas palavras
-                // alfanuméricas.
-                bool is_hyphen_between_words =
-                    (c == '-') &&
-                    (end > 0 &&
-                     u_isUAlphabetic(u_tolower(text.char32At(end - 1)))) &&
-                    (end < text.length() - 1 &&
-                     u_isUAlphabetic(u_tolower(text.char32At(end + 1))));
-
-                if (is_hyphen_between_words) {
-                    end = text.moveIndex32(end, 1);
-                } else if (c != '-') {
-                    end = text.moveIndex32(end, 1);
-                } else {
-                    // Substitui hífen não entre palavras por um espaço.
-                    text.replace(end, 1, ' ');
-                    end = text.moveIndex32(end, 1);
+        for (int i = 0; i < text.length(); i++) {
+            UChar32 c = text.char32At(i);
+            if (u_isUWhiteSpace(c)) {
+                if (!word.isEmpty()) {
+                    this->insert(word);
+                    word.remove();
                 }
             } else {
-                // Extrai a palavra válida e insere no dicionário.
-                if (start != end) {
-                    text.extractBetween(start, end, word);
-                    _dict.insert(word);
-                }
-                start = end = text.moveIndex32(end, 1);
+                word += c;
             }
         }
-
-        // Insere a última palavra.
-        if (start != end) {
-            text.extractBetween(start, end, word);
-            _dict.insert(word);
-        }
     }
-
     // Remove uma palavra do dicionário
     void remove(const icu::UnicodeString& word) { _dict.remove(word); }
 
