@@ -1,12 +1,10 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include <variant>
 
 #include "../include/avl_tree/avl_tree.hpp"
-#include "../include/rb_tree/red_black_tree.hpp"
 #include "../include/dictionary.hpp"
+#include "../include/rb_tree/red_black_tree.hpp"
 #include "utils.cpp"
 
 using namespace std;

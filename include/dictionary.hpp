@@ -25,12 +25,52 @@ class dictionary {
     // Insere uma palavra no dicionário
     void insert(const icu::UnicodeString& word) { _dict.insert(word); }
 
-    // Insere um StringStream no dicionário
-    void insert(std::stringstream& file) {
-        std::string word;
-        while (file >> word) {
-            _dict.insert(icu::UnicodeString::fromUTF8(
-                icu::StringPiece(word.c_str(), word.size())));
+    // Insere um texto no dicionário, formatando enquanto insere
+    void insert_text(icu::UnicodeString text) {
+        icu::UnicodeString word;
+        int32_t start = 0;
+        int32_t end = 0;
+
+        while (end < text.length()) {
+            UChar32 c = text.char32At(end);
+
+            // Converte o caractere para minúsculo, se necessário.
+            c = u_tolower(c);
+
+            // Verifica se o caractere é alfanumérico ou um hífen.
+            if (u_isUAlphabetic(c) || c == '-') {
+                // Verifica se o caractere atual é um hífen entre duas palavras
+                // alfanuméricas.
+                bool is_hyphen_between_words =
+                    (c == '-') &&
+                    (end > 0 &&
+                     u_isUAlphabetic(u_tolower(text.char32At(end - 1)))) &&
+                    (end < text.length() - 1 &&
+                     u_isUAlphabetic(u_tolower(text.char32At(end + 1))));
+
+                if (is_hyphen_between_words) {
+                    end = text.moveIndex32(end, 1);
+                } else if (c != '-') {
+                    end = text.moveIndex32(end, 1);
+                } else {
+                    // Substitui hífen não entre palavras por um espaço.
+                    text.replace(end, 1, ' ');
+                    end = text.moveIndex32(end, 1);
+                }
+            } else {
+                // Extrai a palavra válida e insere no dicionário.
+                if (start != end) {
+                    text.extractBetween(start, end, word);
+                    _dict.insert(word);
+                }
+                start = end = text.moveIndex32(end, 1);
+            }
+        }
+
+        // Insere a última palavra.
+        if (start != end) {
+            text.extractBetween(start, end, word);
+            _dict.insert(word);
         }
     }
 
@@ -58,7 +98,7 @@ class dictionary {
     unsigned int freq(const icu::UnicodeString& word) {
         return _dict.freq(word);
     }
-    
+
     // Retorna uma lista das palavras do dicionário com suas frequências
     icu::UnicodeString list() {
         icu::UnicodeString list;
@@ -78,7 +118,6 @@ class dictionary {
         std::cout << list_str;
     }
 
-    
     void save(const std::string& filename, std::chrono::milliseconds duration) {
         std::string list_str = "";
         list_str +=
@@ -100,8 +139,7 @@ class dictionary {
 
     // Exibe o dicionário em forma de árvore
     // Método temporário (Para testes da AVL e Red-Black)
-    
-    
+
     void show() { _dict.show(); }
 
     unsigned int comparisons() { return _dict.comparisons(); }
