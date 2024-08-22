@@ -37,12 +37,22 @@ struct unicode_compare {
 template <typename type, typename compare = default_compare<type>>
 class red_black_tree {
    private:
-    node<type> *_root;  // Ponteiro para a raiz da árvore
-    node<type> *_nil;   // Nó sentinela que representa nulo (nil)
-    compare _compare;   // Functor de comparação
+    node<type> *_root;   // Ponteiro para a raiz da árvore
+    node<type> *_nil;    // Nó sentinela que representa nulo (nil)
+    unsigned int _size;  // Número de elementos na árvore
+    compare _compare;    // Functor de comparação
+
+    // Limpa a árvore, percorrendo os nós em pós-ordem
+    void _clear(node<type> *n) {
+        if (n != _nil) {
+            _clear(n->left);
+            _clear(n->right);
+            delete n;
+        }
+    }
 
     // Rotação à esquerda em torno do nó x
-    void left_rotate(node<type> *x) {
+    void _left_rotate(node<type> *x) {
         node<type> *y = x->right;  // Salva o nó y (filho direito de x)
 
         // Redefine os filhos do nó x e do nó y
@@ -66,7 +76,7 @@ class red_black_tree {
     }
 
     // Rotação à direita em torno do nó x
-    void right_rotate(node<type> *x) {
+    void _right_rotate(node<type> *x) {
         node<type> *y = x->left;  // Salva o nó y (filho esquerdo de x)
 
         // Redefine os filhos do nó x e do nó y
@@ -89,16 +99,8 @@ class red_black_tree {
         x->parent = y;
     }
 
-    void clear(node<type> *n) {
-        if (n != _nil) {
-            clear(n->left);
-            clear(n->right);
-            delete n;
-        }
-    }
-
     // Encontra o nó com o menor valor na subárvore com raiz x
-    node<type> *minimum(node<type> *x) {
+    node<type> *_minimum(node<type> *x) {
         while (x->left != _nil) {
             x = x->left;  // Desce para o filho esquerdo
         }
@@ -106,7 +108,7 @@ class red_black_tree {
     }
 
     // Encontra o nó com o maior valor na subárvore com raiz x
-    node<type> *maximum(node<type> *x) {
+    node<type> *_maximum(node<type> *x) {
         while (x->right != _nil) {
             x = x->right;  // Desce para o filho direito
         }
@@ -115,7 +117,7 @@ class red_black_tree {
 
     // Corrige a árvore após a inserção de um nó para manter as propriedades da
     // árvore rubro-negra
-    void insert_fixup(node<type> *z) {
+    void _insert_fixup(node<type> *z) {
         while (z->parent->color == RED) {
             if (z->parent == z->parent->parent->left) {
                 node<type> *y = z->parent->parent->right;  // Tio de z
@@ -129,12 +131,12 @@ class red_black_tree {
                     if (z == z->parent->right) {
                         // Caso 2: z é o filho direito
                         z = z->parent;
-                        left_rotate(z);  // Rotaciona à esquerda
+                        _left_rotate(z);  // Rotaciona à esquerda
                     }
                     // Caso 3: z é o filho esquerdo
                     z->parent->color = BLACK;
                     z->parent->parent->color = RED;
-                    right_rotate(z->parent->parent);  // Rotaciona à direita
+                    _right_rotate(z->parent->parent);  // Rotaciona à direita
                 }
             } else {
                 node<type> *y = z->parent->parent->left;  // Tio de z
@@ -148,12 +150,12 @@ class red_black_tree {
                     if (z == z->parent->left) {
                         // Caso 2: z é o filho esquerdo
                         z = z->parent;
-                        right_rotate(z);  // Rotaciona à direita
+                        _right_rotate(z);  // Rotaciona à direita
                     }
                     // Caso 3: z é o filho direito
                     z->parent->color = BLACK;
                     z->parent->parent->color = RED;
-                    left_rotate(z->parent->parent);  // Rotaciona à esquerda
+                    _left_rotate(z->parent->parent);  // Rotaciona à esquerda
                 }
             }
         }
@@ -161,12 +163,12 @@ class red_black_tree {
     }
 
     // Remove o nó z da árvore e ajusta a árvore para manter suas propriedades
-    void remove(node<type> *z) {
+    void _remove(node<type> *z) {
         node<type> *y, *x;
         if (z->left == _nil || z->right == _nil) {
             y = z;  // Caso em que z tem no máximo um filho
         } else {
-            y = minimum(z->right);  // Caso em que z tem dois filhos
+            y = _minimum(z->right);  // Caso em que z tem dois filhos
         }
 
         // Define x como o filho de y
@@ -192,7 +194,7 @@ class red_black_tree {
         }
 
         if (y->color == BLACK) {
-            remove_fixup(x);  // Corrige a árvore se necessário
+            _remove_fixup(x);  // Corrige a árvore se necessário
         }
 
         delete y;  // Libera a memória do nó removido
@@ -200,7 +202,7 @@ class red_black_tree {
 
     // Corrige a árvore após a remoção de um nó para manter as propriedades da
     // árvore rubro-negra
-    void remove_fixup(node<type> *x) {
+    void _remove_fixup(node<type> *x) {
         while (x != _root && x->color == BLACK) {
             if (x == x->parent->left) {
                 node<type> *w = x->parent->right;  // Irmão de x
@@ -208,8 +210,8 @@ class red_black_tree {
                     // Caso 1: O irmão de x é vermelho
                     w->color = BLACK;
                     x->parent->color = RED;
-                    left_rotate(x->parent);  // Rotaciona à esquerda
-                    w = x->parent->right;    // Atualiza w
+                    _left_rotate(x->parent);  // Rotaciona à esquerda
+                    w = x->parent->right;     // Atualiza w
                 }
                 if (w->left->color == BLACK && w->right->color == BLACK) {
                     // Caso 2: Ambos os filhos de w são pretos
@@ -220,15 +222,15 @@ class red_black_tree {
                         // Caso 3: O filho direito de w é preto
                         w->left->color = BLACK;
                         w->color = RED;
-                        right_rotate(w);       // Rotaciona à direita
+                        _right_rotate(w);      // Rotaciona à direita
                         w = x->parent->right;  // Atualiza w
                     }
                     // Caso 4: O filho direito de w é vermelho
                     w->color = x->parent->color;
                     x->parent->color = BLACK;
                     w->right->color = BLACK;
-                    left_rotate(x->parent);  // Rotaciona à esquerda
-                    x = _root;               // Encerra o loop
+                    _left_rotate(x->parent);  // Rotaciona à esquerda
+                    x = _root;                // Encerra o loop
                 }
             } else {
                 node<type> *w = x->parent->left;  // Irmão de x
@@ -236,8 +238,8 @@ class red_black_tree {
                     // Caso 1: O irmão de x é vermelho
                     w->color = BLACK;
                     x->parent->color = RED;
-                    right_rotate(x->parent);  // Rotaciona à direita
-                    w = x->parent->left;      // Atualiza w
+                    _right_rotate(x->parent);  // Rotaciona à direita
+                    w = x->parent->left;       // Atualiza w
                 }
                 if (w->right->color == BLACK && w->left->color == BLACK) {
                     // Caso 2: Ambos os filhos de w são pretos
@@ -248,21 +250,32 @@ class red_black_tree {
                         // Caso 3: O filho esquerdo de w é preto
                         w->right->color = BLACK;
                         w->color = RED;
-                        left_rotate(w);       // Rotaciona à esquerda
+                        _left_rotate(w);      // Rotaciona à esquerda
                         w = x->parent->left;  // Atualiza w
                     }
                     // Caso 4: O filho esquerdo de w é vermelho
                     w->color = x->parent->color;
                     x->parent->color = BLACK;
                     w->left->color = BLACK;
-                    right_rotate(x->parent);  // Rotaciona à direita
-                    x = _root;                // Encerra o loop
+                    _right_rotate(x->parent);  // Rotaciona à direita
+                    x = _root;                 // Encerra o loop
                 }
             }
         }
         x->color = BLACK;  // Garante que x seja preto
     }
 
+    node<type> *_search(type value) {
+        node<type> *p = _root;
+        while (p != _nil && p->key != value) {
+            if (_compare(value, p->key)) {
+                p = p->left;
+            } else {
+                p = p->right;
+            }
+        }
+        return p;
+    }
     // Função auxiliar que imprime a árvore de forma visual
     void bshow(node<type> *n, std::string heranca) {
         if (n != _nil && (n->left != _nil || n->right != _nil)) {
@@ -362,15 +375,50 @@ class red_black_tree {
         }
 
         if (p != _nil) {
-            remove(p);  // Remove o nó encontrado
+            _remove(p);  // Remove o nó encontrado
+            _size--;     // Decrementa o tamanho da árvore
+        }
+    }
+
+    // Retorna o tamanho da árvore
+    unsigned int size() { return _size; }
+
+    // Verifica se a árvore está vazia
+    bool empty() { return _size == 0; }
+
+    // Verifica se a árvore contém uma chave
+    bool contains(type value) { return _search(value) != _nil; }
+
+    // Retorna a frequência de uma chave na árvore(0 se não existir)
+    unsigned int freq(type value) {
+        node<type> *n = _search(value);
+        if (n != _nil) {
+            return n->freq;
+        }
+
+        return 0;
+    }
+
+    // Atualiza a frequência de uma chave
+    void att (type key, unsigned int new_freq) {
+        node<type> *n = _search(key);
+        if (n == _nil) {
+            return;
+        }
+
+        if (new_freq == 0) {
+            _root = _remove(n);
+            _size--;
+        } else {
+            n->freq = new_freq;
         }
     }
 
     // Encontra o menor valor na árvore
-    type minimum() { return minimum(_root)->key; }
+    type minimum() { return _minimum(_root)->key; }
 
     // Encontra o maior valor na árvore
-    type maximum() { return maximum(_root)->key; }
+    type maximum() { return _maximum(_root)->key; }
 
     // Imprime a árvore de forma visual
     void print() { bshow(_root, ""); }
