@@ -321,14 +321,14 @@ class red_black_tree {
 
     // Destrutor que libera a memória alocada para os nós da árvore
     ~red_black_tree() {
-        clear(_root);
+        _clear(_root);
         delete _nil;
         if constexpr (std::is_same_v<compare, unicode_compare>) {
             delete _compare.collator;
         }
     }
 
-    void clear() { clear(_root); }
+    void clear() { _clear(_root); }
 
     // Insere um novo valor na árvore
     void insert(type value) {
@@ -360,7 +360,7 @@ class red_black_tree {
         }
 
         // Corrige a árvore para manter as propriedades da árvore rubro-negra
-        insert_fixup(new_node);
+        _insert_fixup(new_node);
     }
 
     // Remove um valor da árvore
@@ -407,7 +407,7 @@ class red_black_tree {
         }
 
         if (new_freq == 0) {
-            _root = _remove(n);
+            _remove(n);
             _size--;
         } else {
             n->freq = new_freq;
