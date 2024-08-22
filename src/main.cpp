@@ -33,22 +33,5 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Inicia a contagem do tempo
-    auto start = high_resolution_clock::now();
-
-    // Lê o arquivo e insere as palavras no dicionário
-    stringstream file = read_file("in/" + filename);
-    //dict.insert(file);
-
-    // Finaliza a contagem do tempo e calcula a duração
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(stop - start);
-
-    cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-    cout << dict.comparisons() << " comparações" << endl;
-
-    // Salva o dicionário no arquivo
-    dict.save("out/" + filename, duration);
-
     return 0;
 }

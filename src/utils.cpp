@@ -92,9 +92,25 @@ void write_file(const std::string &file_path, const std::string &content) {
 void display_usage(const char *program_name) {
     cerr << "Uso: " << program_name
          << " <modo_estrutura> <arquivo(deve estar na pasta in)>" << endl;
+    cerr << "Modos de estrutura: dictionary_avl, dictionary_rb" << endl;
 }
 
 template <typename dict_type>
 void process_file_and_insert(dict_type& dict, const string& filename) {
-    
+    // Processa o arquivo
+    stringstream file = read_file("in/" + filename);
+
+    // Inicia a contagem do tempo e insere as palavras no dicionário
+    auto start = high_resolution_clock::now();
+    dict.insert(file);
+
+    // Finaliza a contagem do tempo e calcula a duração
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+
+    cout << "Tempo de execução: " << duration.count() << "ms" << endl;
+    cout << dict.comparisons() << " comparações" << endl;
+
+    // Salva o dicionário no arquivo
+    dict.save("out/" + filename, duration);
 }

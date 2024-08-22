@@ -1,6 +1,6 @@
 Tamanho do dicionário: 16388
-Quantidade de comparações: 61514584
-Tempo para montar a tabela: 1641 milissegundos
+Quantidade de comparações: 61514608
+Tempo para montar a tabela: 1104 milissegundos
 
 Dicionário de palavras:
 "Palavra" - Frequência
@@ -905,7 +905,6 @@ Dicionário de palavras:
 "appurtenances" - 2
 "aprons" - 2
 "apt" - 4
-"àpxï" - 1
 "aqueduct" - 5
 "aquila" - 6
 "ar" - 6
@@ -7465,7 +7464,6 @@ Dicionário de palavras:
 "hyssop" - 12
 "hystaspes" - 2
 "i" - 9317
-"ï" - 1
 "ibid" - 97
 "ibis" - 2
 "icamia" - 2
@@ -16392,3 +16390,5 @@ Dicionário de palavras:
 "zoom" - 1
 "zorobabel" - 36
 "zuzim" - 1
+"àpxï" - 1
+"ï" - 1
