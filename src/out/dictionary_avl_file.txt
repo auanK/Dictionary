@@ -1,0 +1,33 @@
+Tamanho do dicionário: 27
+Quantidade de comparações: 746
+Tempo para montar a tabela: 0 milissegundos
+
+Dicionário de palavras:
+"Palavra" - Frequência
+"aterrissar" - 1
+"da" - 1
+"de" - 1
+"do" - 2
+"encontrar" - 1
+"fé" - 1
+"ilha" - 1
+"inacessível" - 1
+"lunar" - 1
+"mais" - 1
+"maré" - 1
+"meu" - 2
+"módulo" - 2
+"na" - 2
+"no" - 2
+"não" - 1
+"o" - 1
+"olhar" - 1
+"orbitando" - 1
+"ponta" - 1
+"sem" - 1
+"sorriso" - 1
+"sozinho" - 2
+"te" - 1
+"teu" - 2
+"tranquilidade" - 1
+"vou" - 1
