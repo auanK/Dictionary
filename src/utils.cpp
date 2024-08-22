@@ -89,8 +89,8 @@ void display_usage(const char *program_name) {
 }
 
 template <typename dict_type>
-void process_file_and_insert(dict_type &dict, const string &filename,
-                             const string &mode_structure) {
+void process_and_save_dict(dict_type &dict, const string &filename,
+                           const string &mode_structure) {
     // Processa o arquivo
     UnicodeString file = read_file("in/" + filename);
 

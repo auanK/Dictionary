@@ -21,10 +21,10 @@ int main(int argc, char* argv[]) {
 
     if (mode_structure == "dictionary_avl") {
         dictionary<avl_tree<UnicodeString>> dict;
-        process_file_and_insert(dict, filename, mode_structure);
+        process_and_save_dict(dict, filename, mode_structure);
     } else if (mode_structure == "dictionary_rb") {
         dictionary<red_black_tree<UnicodeString>> dict;
-        process_file_and_insert(dict, filename, mode_structure);
+        process_and_save_dict(dict, filename, mode_structure);
     } else {
         cerr << "Error: Invalid mode of structure" << endl;
         display_usage(argv[0]);
