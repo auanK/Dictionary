@@ -1,15 +1,45 @@
 #pragma once
 
+#include <unicode/coll.h>
+#include <unicode/unistr.h>
+
 #include <iostream>
 
 #include "node.hpp"
 
-// Classe que implementa uma árvore rubro-negra
+// Functor padrão para comparar tipos genéricos onde suportam operador '<'
 template <typename type>
+struct default_compare {
+    bool operator()(const type &lhs, const type &rhs) const {
+        return lhs < rhs;
+    }
+};
+
+// Functor para comparar strings Unicode usando ICU Collator
+// https://unicode-org.github.io/icu/userguide/collation/
+struct unicode_compare {
+    icu::Collator *collator;  // Ponteiro para o Collator que faz a comparação
+
+    unicode_compare() {
+        UErrorCode status = U_ZERO_ERROR;
+        collator = icu::Collator::createInstance(status);
+    }
+
+    // Compara duas strings Unicode usando o Collator
+    bool operator()(const icu::UnicodeString &lhs,
+                    const icu::UnicodeString &rhs) const {
+        UErrorCode status = U_ZERO_ERROR;
+        return collator->compare(lhs, rhs, status) < 0;
+    }
+};
+
+// Classe que implementa uma árvore rubro-negra
+template <typename type, typename compare = default_compare<type>>
 class red_black_tree {
    private:
     node<type> *_root;  // Ponteiro para a raiz da árvore
     node<type> *_nil;   // Nó sentinela que representa nulo (nil)
+    compare _compare;   // Functor de comparação
 
     // Rotação à esquerda em torno do nó x
     void left_rotate(node<type> *x) {
@@ -254,8 +284,15 @@ class red_black_tree {
             std::cout << "#" << std::endl;  // Nó nulo
             return;
         }
-
-        std::cout << n->key << (n->color == RED ? "R" : "B") << "(" << n->freq << ")" << std::endl;
+        if constexpr (std::is_same<type, icu::UnicodeString>::value) {
+            std::string key;
+            n->key.toUTF8String(key);
+            std::cout << key << (n->color == RED ? "R" : "B") << "(" << n->freq
+                      << ")" << std::endl;
+        } else {
+            std::cout << n->key << (n->color == RED ? "R" : "B") << "("
+                      << n->freq << ")" << std::endl;
+        }
 
         if (n != _nil && (n->left != _nil || n->right != _nil)) {
             bshow(n->left, heranca + "l");  // Imprime o filho esquerdo
@@ -264,7 +301,7 @@ class red_black_tree {
 
    public:
     // Construtor que inicializa a árvore com um nó sentinela _nil
-    red_black_tree() {
+    red_black_tree(compare comp = compare()) : _compare(comp) {
         _root = _nil = new node<type>(0, BLACK, nullptr, nullptr, nullptr);
         _nil->left = _nil->right = _nil->parent = _nil;
     }
@@ -273,6 +310,9 @@ class red_black_tree {
     ~red_black_tree() {
         clear(_root);
         delete _nil;
+        if constexpr (std::is_same_v<compare, unicode_compare>) {
+            delete _compare.collator;
+        }
     }
 
     void clear() { clear(_root); }
@@ -285,9 +325,9 @@ class red_black_tree {
         // Encontra o local correto para inserir o novo nó
         while (current != _nil) {
             current_father = current;
-            if (value < current->key) {
+            if (_compare(value, current->key)) {
                 current = current->left;
-            } else if (value > current->key) {
+            } else if (_compare(current->key, value)) {
                 current = current->right;
             } else {
                 current->freq++;
@@ -300,7 +340,7 @@ class red_black_tree {
             new node<type>(value, RED, _nil, _nil, current_father);
         if (current_father == _nil) {
             _root = new_node;  // A árvore estava vazia
-        } else if (value < current_father->key) {
+        } else if (_compare(value, current_father->key)) {
             current_father->left = new_node;  // Insere como filho esquerdo
         } else {
             current_father->right = new_node;  // Insere como filho direito
@@ -314,7 +354,7 @@ class red_black_tree {
     void remove(type value) {
         node<type> *p = _root;
         while (p != _nil && p->key != value) {
-            if (value < p->key) {
+            if (_compare(value, p->key)) {
                 p = p->left;
             } else {
                 p = p->right;
