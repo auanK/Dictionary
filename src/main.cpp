@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "../include/avl_tree/avl_tree.hpp"
+#include "../include/rb_tree/red_black_tree.hpp"
 #include "../include/dictionary.hpp"
 #include "utils.cpp"
 
@@ -25,7 +26,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    dictionary<avl_tree<UnicodeString, unicode_compare>> dict;
+    dictionary<red_black_tree<UnicodeString, unicode_compare>> dict;
 
     // Inicia a contagem do tempo
     auto start = high_resolution_clock::now();
@@ -39,7 +40,7 @@ int main(int argc, char* argv[]) {
     auto duration = duration_cast<milliseconds>(stop - start);
 
     // Salva o dicionário no arquivo
-    dict.save("out/" + filename, duration);
+    // dict.save("out/" + filename, duration);
 
     return 0;
 }

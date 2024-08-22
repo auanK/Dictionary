@@ -6,45 +6,20 @@
 #include <iostream>
 
 #include "node.hpp"
-
-// Functor padrão para comparar tipos genéricos onde suportam operador '<'
-template <typename type>
-struct default_compare {
-    bool operator()(const type &lhs, const type &rhs) const {
-        return lhs < rhs;
-    }
-};
-
-// Functor para comparar strings Unicode usando ICU Collator
-// https://unicode-org.github.io/icu/userguide/collation/
-struct unicode_compare {
-    icu::Collator *collator;  // Ponteiro para o Collator que faz a comparação
-
-    unicode_compare() {
-        UErrorCode status = U_ZERO_ERROR;
-        collator = icu::Collator::createInstance(status);
-    }
-
-    // Compara duas strings Unicode usando o Collator
-    bool operator()(const icu::UnicodeString &lhs,
-                    const icu::UnicodeString &rhs) const {
-        UErrorCode status = U_ZERO_ERROR;
-        return collator->compare(lhs, rhs, status) < 0;
-    }
-};
+#include "../compare.hpp"
 
 // Classe que implementa uma árvore rubro-negra
 template <typename type, typename compare = default_compare<type>>
 class red_black_tree {
    private:
-    node<type> *_root;              // Ponteiro para a raiz da árvore
-    node<type> *_nil;               // Nó sentinela que representa nulo (nil)
+    rb_node<type> *_root;              // Ponteiro para a raiz da árvore
+    rb_node<type> *_nil;               // Nó sentinela que representa nulo (nil)
     unsigned int _size;             // Número de elementos na árvore
     compare _compare;               // Functor de comparação
     unsigned int _comparisons = 0;  // Número de comparações feitas
 
     // Limpa a árvore, percorrendo os nós em pós-ordem
-    void _clear(node<type> *n) {
+    void _clear(rb_node<type> *n) {
         _comparisons++;
         if (n != _nil) {
             _clear(n->left);
@@ -54,8 +29,8 @@ class red_black_tree {
     }
 
     // Rotação à esquerda em torno do nó x
-    void _left_rotate(node<type> *x) {
-        node<type> *y = x->right;  // Salva o nó y (filho direito de x)
+    void _left_rotate(rb_node<type> *x) {
+        rb_node<type> *y = x->right;  // Salva o nó y (filho direito de x)
 
         _comparisons++;
         // Redefine os filhos do nó x e do nó y
@@ -81,8 +56,8 @@ class red_black_tree {
     }
 
     // Rotação à direita em torno do nó x
-    void _right_rotate(node<type> *x) {
-        node<type> *y = x->left;  // Salva o nó y (filho esquerdo de x)
+    void _right_rotate(rb_node<type> *x) {
+        rb_node<type> *y = x->left;  // Salva o nó y (filho esquerdo de x)
 
         _comparisons++;
         // Redefine os filhos do nó x e do nó y
@@ -108,7 +83,7 @@ class red_black_tree {
     }
 
     // Encontra o nó com o menor valor na subárvore com raiz x
-    node<type> *_minimum(node<type> *x) {
+    rb_node<type> *_minimum(rb_node<type> *x) {
         while (x->left != _nil) {
             x = x->left;  // Desce para o filho esquerdo
         }
@@ -116,7 +91,7 @@ class red_black_tree {
     }
 
     // Encontra o nó com o maior valor na subárvore com raiz x
-    node<type> *_maximum(node<type> *x) {
+    rb_node<type> *_maximum(rb_node<type> *x) {
         while (x->right != _nil) {
             x = x->right;  // Desce para o filho direito
         }
@@ -125,11 +100,11 @@ class red_black_tree {
 
     // Corrige a árvore após a inserção de um nó para manter as propriedades da
     // árvore rubro-negra
-    void _insert_fixup(node<type> *z) {
+    void _insert_fixup(rb_node<type> *z) {
         while (z->parent->color == RED) {
             _comparisons++;
             if (z->parent == z->parent->parent->left) {
-                node<type> *y = z->parent->parent->right;  // Tio de z
+                rb_node<type> *y = z->parent->parent->right;  // Tio de z
                 _comparisons++;
                 if (y->color == RED) {
                     // Caso 1: O tio de z é vermelho
@@ -150,7 +125,7 @@ class red_black_tree {
                     _right_rotate(z->parent->parent);  // Rotaciona à direita
                 }
             } else {
-                node<type> *y = z->parent->parent->left;  // Tio de z
+                rb_node<type> *y = z->parent->parent->left;  // Tio de z
                 _comparisons++;
                 if (y->color == RED) {
                     // Caso 1: O tio de z é vermelho
@@ -177,8 +152,8 @@ class red_black_tree {
     }
 
     // Remove o nó z da árvore e ajusta a árvore para manter suas propriedades
-    void _remove(node<type> *z) {
-        node<type> *y, *x;
+    void _remove(rb_node<type> *z) {
+        rb_node<type> *y, *x;
         _comparisons++;
         if (z->left == _nil || z->right == _nil) {
             y = z;  // Caso em que z tem no máximo um filho
@@ -221,11 +196,11 @@ class red_black_tree {
 
     // Corrige a árvore após a remoção de um nó para manter as propriedades da
     // árvore rubro-negra
-    void _remove_fixup(node<type> *x) {
+    void _remove_fixup(rb_node<type> *x) {
         while (x != _root && x->color == BLACK) {
             _comparisons++;
             if (x == x->parent->left) {
-                node<type> *w = x->parent->right;  // Irmão de x
+                rb_node<type> *w = x->parent->right;  // Irmão de x
                 _comparisons++;
                 if (w->color == RED) {
                     // Caso 1: O irmão de x é vermelho
@@ -256,7 +231,7 @@ class red_black_tree {
                     x = _root;                // Encerra o loop
                 }
             } else {
-                node<type> *w = x->parent->left;  // Irmão de x
+                rb_node<type> *w = x->parent->left;  // Irmão de x
                 _comparisons++;
                 if (w->color == RED) {
                     // Caso 1: O irmão de x é vermelho
@@ -291,8 +266,8 @@ class red_black_tree {
         x->color = BLACK;  // Garante que x seja preto
     }
 
-    node<type> *_search(type value) {
-        node<type> *p = _root;
+    rb_node<type> *_search(type value) {
+        rb_node<type> *p = _root;
         while (p != _nil && p->key != value) {
             if (_compare(value, p->key)) {
                 p = p->left;
@@ -303,7 +278,7 @@ class red_black_tree {
         return p;
     }
     // Função auxiliar que imprime a árvore de forma visual
-    void bshow(node<type> *n, std::string heranca) {
+    void bshow(rb_node<type> *n, std::string heranca) {
         if (n != _nil && (n->left != _nil || n->right != _nil)) {
             bshow(n->right, heranca + "r");  // Imprime o filho direito
         }
@@ -341,7 +316,7 @@ class red_black_tree {
    public:
     // Construtor que inicializa a árvore com um nó sentinela _nil
     red_black_tree(compare comp = compare()) : _compare(comp) {
-        _root = _nil = new node<type>(0, BLACK, nullptr, nullptr, nullptr);
+        _root = _nil = new rb_node<type>(0, BLACK, nullptr, nullptr, nullptr);
         _nil->left = _nil->right = _nil->parent = _nil;
     }
 
@@ -358,8 +333,8 @@ class red_black_tree {
 
     // Insere um novo valor na árvore
     void insert(type value) {
-        node<type> *current = _root;
-        node<type> *current_father = _nil;
+        rb_node<type> *current = _root;
+        rb_node<type> *current_father = _nil;
 
         // Encontra o local correto para inserir o novo nó
         while (current != _nil) {
@@ -375,8 +350,8 @@ class red_black_tree {
         }
 
         // Cria o novo nó e define seu pai
-        node<type> *new_node =
-            new node<type>(value, RED, _nil, _nil, current_father);
+        rb_node<type> *new_node =
+            new rb_node<type>(value, RED, _nil, _nil, current_father);
         if (current_father == _nil) {
             _root = new_node;  // A árvore estava vazia
         } else if (_compare(value, current_father->key)) {
@@ -391,7 +366,7 @@ class red_black_tree {
 
     // Remove um valor da árvore
     void remove(type value) {
-        node<type> *p = _root;
+        rb_node<type> *p = _root;
         while (p != _nil && p->key != value) {
             if (_compare(value, p->key)) {
                 p = p->left;
@@ -417,7 +392,7 @@ class red_black_tree {
 
     // Retorna a frequência de uma chave na árvore(0 se não existir)
     unsigned int freq(type value) {
-        node<type> *n = _search(value);
+        rb_node<type> *n = _search(value);
         if (n != _nil) {
             return n->freq;
         }
@@ -427,7 +402,7 @@ class red_black_tree {
 
     // Atualiza a frequência de uma chave
     void att(type key, unsigned int new_freq) {
-        node<type> *n = _search(key);
+        rb_node<type> *n = _search(key);
         if (n == _nil) {
             return;
         }

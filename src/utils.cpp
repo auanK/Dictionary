@@ -96,6 +96,7 @@ void display_usage(const char *program_name) {
 
 // Função para verificar a estrutura fornecida
 bool is_valid_structure(const string &mode_structure) {
-    return mode_structure == "dictionary_avl";
+    return mode_structure == "dictionary_avl" ||
+           mode_structure == "dictionary_rb";
 }
 

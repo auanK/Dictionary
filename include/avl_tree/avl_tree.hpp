@@ -6,35 +6,10 @@
 #include <stack>
 #include <string>
 
+#include "../compare.hpp"
 #include "node.hpp"
 
 using namespace icu;
-
-// Functor padrão para comparar tipos genéricos onde suportam operador '<'
-template <typename type>
-struct default_compare {
-    bool operator()(const type& lhs, const type& rhs) const {
-        return lhs < rhs;
-    }
-};
-
-// Functor para comparar strings Unicode usando ICU Collator
-// https://unicode-org.github.io/icu/userguide/collation/
-struct unicode_compare {
-    icu::Collator* collator;  // Ponteiro para o Collator que faz a comparação
-
-    unicode_compare() {
-        UErrorCode status = U_ZERO_ERROR;
-        collator = icu::Collator::createInstance(status);
-    }
-
-    // Compara duas strings Unicode usando o Collator
-    bool operator()(const icu::UnicodeString& lhs,
-                    const icu::UnicodeString& rhs) const {
-        UErrorCode status = U_ZERO_ERROR;
-        return collator->compare(lhs, rhs, status) < 0;
-    }
-};
 
 // Árvore AVL genérica, caso o compare não seja passado, usa o default_compare
 template <typename type, typename compare = default_compare<type>>
