@@ -58,7 +58,7 @@ class dictionary {
     unsigned int freq(const icu::UnicodeString& word) {
         return _dict.freq(word);
     }
-    /*
+    
     // Retorna uma lista das palavras do dicionário com suas frequências
     icu::UnicodeString list() {
         icu::UnicodeString list;
@@ -78,6 +78,7 @@ class dictionary {
         std::cout << list_str;
     }
 
+    
     void save(const std::string& filename, std::chrono::milliseconds duration) {
         std::string list_str = "";
         list_str +=
@@ -99,7 +100,8 @@ class dictionary {
 
     // Exibe o dicionário em forma de árvore
     // Método temporário (Para testes da AVL e Red-Black)
-    */
+    
+    
     void show() { _dict.show(); }
 
     unsigned int comparisons() { return _dict.comparisons(); }

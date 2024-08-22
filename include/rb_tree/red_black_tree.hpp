@@ -14,7 +14,7 @@ class red_black_tree {
    private:
     rb_node<type> *_root;              // Ponteiro para a raiz da árvore
     rb_node<type> *_nil;               // Nó sentinela que representa nulo (nil)
-    unsigned int _size;             // Número de elementos na árvore
+    unsigned int _size = 0;             // Número de elementos na árvore
     compare _compare;               // Functor de comparação
     unsigned int _comparisons = 0;  // Número de comparações feitas
 
@@ -101,6 +101,7 @@ class red_black_tree {
     // Corrige a árvore após a inserção de um nó para manter as propriedades da
     // árvore rubro-negra
     void _insert_fixup(rb_node<type> *z) {
+        _comparisons++;
         while (z->parent->color == RED) {
             _comparisons++;
             if (z->parent == z->parent->parent->left) {
@@ -329,6 +330,56 @@ class red_black_tree {
         }
     }
 
+    struct simple_node {
+        type key;
+        unsigned int freq;
+    };
+
+    class iterator {
+         private:
+          rb_node<type> *_node;
+          rb_node<type> *_nil;
+    
+         public:
+          iterator(rb_node<type> *node, rb_node<type> *nil) : _node(node), _nil(nil) {}
+    
+          simple_node operator*() {
+                return simple_node{_node->key, _node->freq};
+          }
+    
+          iterator &operator++() {
+                if (_node->right != _nil) {
+                 _node = _node->right;
+                 while (_node->left != _nil) {
+                      _node = _node->left;
+                 }
+                } else {
+                 rb_node<type> *y = _node->parent;
+                 while (_node == y->right) {
+                      _node = y;
+                      y = y->parent;
+                 }
+                 if (_node->right != y) {
+                      _node = y;
+                 }
+                }
+                return *this;
+          }
+    
+          bool operator!=(const iterator &other) { return _node != other._node; }
+    };
+
+    iterator begin() {
+        rb_node<type> *n = _root;
+        while (n->left != _nil) {
+            n = n->left;
+        }
+        return iterator(n, _nil);
+    }
+
+    iterator end() { return iterator(_nil, _nil); }
+    
+
     void clear() { _clear(_root); }
 
     // Insere um novo valor na árvore
@@ -359,6 +410,8 @@ class red_black_tree {
         } else {
             current_father->right = new_node;  // Insere como filho direito
         }
+
+        _size++;  // Incrementa o tamanho da árvore
 
         // Corrige a árvore para manter as propriedades da árvore rubro-negra
         _insert_fixup(new_node);

@@ -94,9 +94,7 @@ void display_usage(const char *program_name) {
          << " <modo_estrutura> <arquivo(deve estar na pasta in)>" << endl;
 }
 
-// Função para verificar a estrutura fornecida
-bool is_valid_structure(const string &mode_structure) {
-    return mode_structure == "dictionary_avl" ||
-           mode_structure == "dictionary_rb";
+template <typename dict_type>
+void process_file_and_insert(dict_type& dict, const string& filename) {
+    
 }
-
