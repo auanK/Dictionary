@@ -297,12 +297,6 @@ class avl_tree {
         }
     }
 
-    // Nó simples, usado para o iterador
-    struct simple_node {
-        type key;
-        unsigned int freq;
-    };
-
     class iterator {
        private:
         node<type>* _current;            // Nó atual
@@ -328,8 +322,8 @@ class avl_tree {
             }
         }
 
-        // Retorna o simple_node atual
-        simple_node operator*() const {
+        // Retorna o std::pair atual
+        std::pair<type, unsigned int> operator*() const {
             return {_current->key, _current->freq};
         }
 

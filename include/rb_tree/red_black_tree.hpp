@@ -330,11 +330,6 @@ class red_black_tree {
         }
     }
 
-    struct simple_node {
-        type key;
-        unsigned int freq;
-    };
-
     class iterator {
        private:
         rb_node<type> *_node;
@@ -344,7 +339,9 @@ class red_black_tree {
         iterator(rb_node<type> *node, rb_node<type> *nil)
             : _node(node), _nil(nil) {}
 
-        simple_node operator*() { return simple_node{_node->key, _node->freq}; }
+        std::pair<type, unsigned int> operator*() const {
+            return std::make_pair(_node->key, _node->freq);
+        }
 
         iterator &operator++() {
             if (_node->right != _nil) {
@@ -365,7 +362,9 @@ class red_black_tree {
             return *this;
         }
 
-        bool operator!=(const iterator &other) { return _node != other._node; }
+        bool operator!=(const iterator &other) const {
+            return _node != other._node;
+        }
     };
 
     iterator begin() {

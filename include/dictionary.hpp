@@ -69,9 +69,8 @@ class dictionary {
     icu::UnicodeString list() {
         icu::UnicodeString list;
         for (auto it = _dict.begin(); it != _dict.end(); ++it) {
-            auto node = *it;
-            list += "\"" + node.key + "\" - " +
-                    icu::UnicodeString::fromUTF8(std::to_string(node.freq)) +
+            list += "\"" + (*it).first + "\" - " +
+                    icu::UnicodeString::fromUTF8(std::to_string((*it).second)) +
                     "\n";
         }
         return list;
