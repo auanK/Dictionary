@@ -301,6 +301,8 @@ class avl_tree {
        private:
         node<type>* _current;            // Nó atual
         std::stack<node<type>*> _stack;  // Pilha para percorrer a árvore
+        std::pair<type, unsigned int>
+            _current_pair;  // Membro para armazenar o par
 
         // Função auxiliar para empilhar os nós da subárvore esquerda
         void push_left(node<type>* n) {
@@ -312,19 +314,19 @@ class avl_tree {
 
        public:
         // Construtor do iterador
-        iterator(node<type>* root) {
+        iterator(node<type>* root) : _current(nullptr) {
             push_left(root);
             if (!_stack.empty()) {
                 _current = _stack.top();
                 _stack.pop();
-            } else {
-                _current = nullptr;
+                _current_pair = {_current->key,
+                                 _current->freq};  // Inicializa o par
             }
         }
 
         // Retorna o std::pair atual
         std::pair<type, unsigned int> operator*() const {
-            return {_current->key, _current->freq};
+            return _current_pair;
         }
 
         // Avança o iterador para o próximo nó
@@ -336,8 +338,11 @@ class avl_tree {
                 if (!_stack.empty()) {
                     _current = _stack.top();
                     _stack.pop();
+                    _current_pair = {_current->key,
+                                     _current->freq};  // Atualiza o par
                 } else {
                     _current = nullptr;
+                    _current_pair = {};  // Reseta o par
                 }
             }
             return *this;
@@ -347,6 +352,9 @@ class avl_tree {
         bool operator!=(const iterator& other) const {
             return _current != other._current;
         }
+
+        // Retorna um ponteiro para o std::pair atual
+        std::pair<type, unsigned int>* operator->() { return &_current_pair; }
     };
 
     // Funções begin e end para iniciar e terminar o iterador

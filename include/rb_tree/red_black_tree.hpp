@@ -365,6 +365,10 @@ class red_black_tree {
         bool operator!=(const iterator &other) const {
             return _node != other._node;
         }
+
+        std::pair<type, unsigned int> *operator->() {
+            return new std::pair<type, unsigned int>(_node->key, _node->freq);
+        }
     };
 
     iterator begin() {
