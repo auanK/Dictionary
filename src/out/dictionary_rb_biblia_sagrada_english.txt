@@ -1,4 +1,4 @@
-Tamanho do dicionário: 16388
+´^Tamanho do dicionário: 16388
 Quantidade de comparações: 27603193
 Tempo para montar a tabela: 720 milissegundos
 
