@@ -58,12 +58,13 @@ class dictionary {
     }
 
     // Atualiza a frequência de uma palavra
-    void att(const icu::UnicodeString& word, int att) { _dict.att(word, att); }
+    // void att(const icu::UnicodeString& word, int att) { _dict.att(word, att);
+    // }
 
     // Retorna a frequência de uma palavra
-    unsigned int freq(const icu::UnicodeString& word) {
-        return _dict.freq(word);
-    }
+    // unsigned int freq(const icu::UnicodeString& word) {
+    //    return _dict.freq(word);
+    // }
 
     // Retorna uma lista das palavras do dicionário com suas frequências
     icu::UnicodeString list() {
@@ -85,10 +86,10 @@ class dictionary {
 
     void save(const std::string& filename, std::chrono::milliseconds duration) {
         std::string list_str = "";
+        // std::string comparisons = std::to_string(_dict.comparisons());
         list_str +=
             "Tamanho do dicionário: " + std::to_string(this->size()) + "\n";
-        list_str += "Quantidade de comparações: " +
-                    std::to_string(this->comparisons()) + "\n";
+        list_str += "Número de comparações: " + comparisons + "\n";
         list_str +=
             "Tempo para montar a tabela: " + std::to_string(duration.count()) +
             " milissegundos\n\n";
@@ -105,7 +106,7 @@ class dictionary {
     // Exibe o dicionário em forma de árvore
     // Método temporário (Para testes da AVL e Red-Black)
 
-    void show() { _dict.show(); }
+    // void show() { _dict.show(); }
 
     unsigned int comparisons() { return _dict.comparisons(); }
 };

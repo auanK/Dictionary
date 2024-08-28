@@ -103,7 +103,7 @@ void process_and_save_dict(dict_type &dict, const string &filename,
     auto duration = duration_cast<milliseconds>(stop - start);
 
     cout << "Tempo de execução: " << duration.count() << "ms" << endl;
-    cout << dict.comparisons() << " comparações" << endl;
+    // cout << dict.comparisons() << " comparações" << endl;
 
     // Salva o dicionário no arquivo
     string out_filename = "out/" + mode_structure + "_" + filename;

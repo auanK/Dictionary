@@ -4,6 +4,7 @@
 
 #include "../include/avl_tree/avl_tree.hpp"
 #include "../include/dictionary.hpp"
+#include "../include/hash_table/chained_hash_table.hpp"
 #include "../include/rb_tree/red_black_tree.hpp"
 #include "utils.cpp"
 
@@ -26,6 +27,9 @@ int main(int argc, char* argv[]) {
         dictionary<red_black_tree<UnicodeString, unicode_compare>> dict;
         process_and_save_dict(dict, filename, mode_structure);
 
+    } else if (mode_structure == "dictionary_hash") {
+        dictionary<hash_table<UnicodeString, hash_unicode>> dict;
+        process_and_save_dict(dict, filename, mode_structure);
     } else {
         cerr << "Error: Invalid mode of structure" << endl;
         display_usage(argv[0]);
