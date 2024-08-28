@@ -340,23 +340,6 @@ class hash_table {
             }
         }
 
-        // Método para buscar um elemento no iterador
-        iterator find(const key& k) {
-            size_t i = _table->hash_code(k);  // Calcula o índice
-            auto& bucket =
-                (*_table->_table)[i];  // Obtém a lista correspondente
-
-            // Procura o elemento na lista
-            for (auto it = bucket.begin(); it != bucket.end(); ++it) {
-                if (it->first == k) {
-                    return iterator(
-                        i, _table,
-                        it);  // Retorna o iterador para o elemento encontrado
-                }
-            }
-            return end();  // Se não encontrar, retorna o iterador para o final
-        }
-
         // Sobrecarga do operador de pré-incremento (++it)
         iterator& operator++() {
             if (_index >= _table->_table_size) {
