@@ -89,7 +89,9 @@ class dictionary {
         // std::string comparisons = std::to_string(_dict.comparisons());
         list_str +=
             "Tamanho do dicionário: " + std::to_string(this->size()) + "\n";
-        // list_str += "Número de comparações: " + comparisons + "\n";
+        list_str +=
+            "Número de comparações: " + std::to_string(_dict.comparisons()) +
+            "\n";
         list_str +=
             "Tempo para montar a tabela: " + std::to_string(duration.count()) +
             " milissegundos\n\n";

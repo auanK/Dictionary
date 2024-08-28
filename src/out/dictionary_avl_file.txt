@@ -1,5 +1,5 @@
 Tamanho do dicionário: 27
-Quantidade de comparações: 760
+Número de comparações: 760
 Tempo para montar a tabela: 0 milissegundos
 
 Dicionário de palavras:

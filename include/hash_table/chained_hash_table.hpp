@@ -22,9 +22,9 @@ struct hash_unicode {
 template <typename key, typename hash = std::hash<key>>
 class hash_table {
    private:
-    size_t _number_of_elements;  // Número de elementos na tabela hash
-    size_t _table_size;          // Tamanho atual da tabela hash
-    mutable unsigned int _comparisons = 0;  // Número de comparações realizadas
+    size_t _number_of_elements;     // Número de elementos na tabela hash
+    size_t _table_size;             // Tamanho atual da tabela hash
+    unsigned int _comparisons = 0;  // Número de comparações realizadas
 
     // Vetor de listas para armazenar pares chave-valor
     std::vector<std::list<std::pair<key, int>>>* _table;
@@ -41,22 +41,30 @@ class hash_table {
     // Encontra o próximo número primo maior ou igual a x
     size_t get_next_prime(size_t x) {
         // Se x for par, incrementa para o próximo número ímpar
+        _comparisons++;
         if (x % 2 == 0) {
             x++;
         }
 
         // Itera para encontrar o próximo número primo
+        _comparisons++;
         while (true) {
             // Verifica se x é divisível por algum número ímpar até a raiz
             bool is_prime = true;
+            _comparisons++;
             for (size_t i = 3; i <= std::sqrt(x); i += 2) {
                 // Se x for divisível por i, não é um número primo
+                _comparisons++;
                 if (x % i == 0) {
                     is_prime = false;
                     break;
                 }
+                _comparisons++;
             }
+            _comparisons++;
+
             // Se encontrou um número primo, retorna x
+            _comparisons++;
             if (is_prime) {
                 return x;
             }
@@ -157,6 +165,7 @@ class hash_table {
     // Define o fator de carga atual e redimensiona a tabela se necessário
     void load_factor(float lf) {
         // Verifica se o fator de carga está fora do intervalo permitido
+        _comparisons++;
         if (lf <= 0 || lf > _max_load_factor) {
             throw std::out_of_range("Out of range load factor");
         }
@@ -164,6 +173,7 @@ class hash_table {
         _load_factor = lf;  // Atualiza o fator de carga
 
         // Redimensiona a tabela se o fator de carga exceder o máximo
+        _comparisons++;
         if (load_factor() > _load_factor) {
             rehash(2 * _table_size);
         }
@@ -172,6 +182,7 @@ class hash_table {
     // Insere a chave k com um valor associado na tabela hash
     bool insert(const key& k) {
         // Verifica se o fator de carga excede o máximo permitido
+        _comparisons++;
         if (load_factor() > _max_load_factor) {
             rehash(2 * _table_size);
         }
@@ -180,12 +191,16 @@ class hash_table {
         size_t i = hash_code(k);
 
         // Itera para encontrar a chave k na lista do slot correspondente
+        _comparisons++;
         for (auto& p : (*_table)[i]) {
+            _comparisons++;
             if (p.first == k) {
                 p.second++;
                 return false;
             }
+            _comparisons++;
         }
+        _comparisons++;
 
         // Adiciona a chave e o valor no slot correspondente
         (*_table)[hash_code(k)].push_back(std::make_pair(k, 1));
@@ -213,13 +228,17 @@ class hash_table {
         size_t i = hash_code(k);
 
         // Itera para encontrar a chave k na lista do slot correspondente
+        _comparisons++;
         for (auto it = (*_table)[i].begin(); it != (*_table)[i].end(); ++it) {
+            _comparisons++;
             if (it->first == k) {
                 (*_table)[i].erase(it);  // Remove a chave do slot
                 _number_of_elements--;   // Decrementa o número de elementos
                 return true;             // A chave foi removida
             }
+            _comparisons++;
         }
+        _comparisons++;
 
         return false;  // A chave não foi encontrada
     }
@@ -263,11 +282,15 @@ class hash_table {
         size_t i = hash_code(k);
 
         // Itera para encontrar a chave k na lista do slot correspondente
+        _comparisons++;
         for (auto& p : (*_table)[i]) {
+            _comparisons++;
             if (p.first == k) {
                 return p.second;
             }
+            _comparisons++;
         }
+        _comparisons++;
 
         // Adiciona a chave e o valor no slot correspondente
         (*_table)[i].push_back(std::make_pair(k, 0));
@@ -282,6 +305,7 @@ class hash_table {
     // Redimensiona a tabela hash para um novo tamanho
     void rehash(size_t new_size) {
         // Se o novo tamanho for menor ou igual ao tamanho atual, não faz nada
+        _comparisons++;
         if (new_size <= _table_size) {
             return;
         }
@@ -294,12 +318,16 @@ class hash_table {
             new std::vector<std::list<std::pair<key, int>>>(new_size);
 
         // Transfere os elementos da tabela antiga para a nova tabela
+        _comparisons++;
         for (const auto& bucket : *_table) {
+            _comparisons++;
             for (const auto& p : bucket) {
                 size_t index = _hashing(p.first) % new_size;
                 (*new_table)[index].push_back(p);
             }
+            _comparisons++;
         }
+        _comparisons++;
 
         delete _table;           // Libera a memória da tabela antiga
         _table = new_table;      // Atualiza o ponteiro para a nova tabela
