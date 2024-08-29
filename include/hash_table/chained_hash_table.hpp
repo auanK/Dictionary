@@ -19,14 +19,15 @@ struct hash_unicode {
 
 // Classe que implementa uma tabela hash com tratamento de colisão por
 // encadeamento exterior
-template <typename key, typename hash = std::hash<key>>
+template <typename key, typename hash = std::hash<key>,
+          typename compare = default_compare<key>>
 class hash_table {
    private:
-    size_t _number_of_elements;     // Número de elementos na tabela hash
-    size_t _table_size;             // Tamanho atual da tabela hash
-    unsigned int _comparisons = 0;  // Número de comparações realizadas
+    size_t _number_of_elements;  // Número de elementos na tabela hash
+    size_t _table_size;          // Tamanho atual da tabela hash
+    unsigned int _comparisons;   // Número de comparações realizadas
 
-    // Vetor de listas para armazenar pares chave-valor
+    // Vetor de listas de pares (chave, valor)
     std::vector<std::list<std::pair<key, int>>>* _table;
 
     // Fator de carga atual da tabela hash
@@ -38,9 +39,18 @@ class hash_table {
     // Função de hash para gerar índices de tabela
     hash _hashing;
 
+    // Functor de comparação
+    compare _compare;
+
+    // Vetor de chaves ordenadas (para iteradores)
+    std::vector<std::pair<key, int>> _sorted_keys;
+
+    // Flag para indicar se o vetor de chaves ordenadas está desatualizado
+    bool _keys_dirty;
+
     // Encontra o próximo número primo maior ou igual a x
     size_t get_next_prime(size_t x) {
-        // Se x for par, incrementa para o próximo número ímpar
+        // Se x for par, incrementa para o próximo ímpar
         _comparisons++;
         if (x % 2 == 0) {
             x++;
@@ -68,6 +78,7 @@ class hash_table {
             if (is_prime) {
                 return x;
             }
+
             // Senão, vai para o próximo número ímpar
             x += 2;
         }
@@ -76,44 +87,75 @@ class hash_table {
     // Calcula o índice da tabela hash para uma chave k
     size_t hash_code(const key& k) const { return _hashing(k) % _table_size; }
 
+    // Atualiza o vetor de chaves ordenadas
+    void update_sorted_keys() {
+        // Limpa o vetor de chaves ordenadas e reserva espaço
+        _sorted_keys.clear();
+        _sorted_keys.reserve(_number_of_elements);
+
+        // Itera sobre cada bucket da tabela hash
+        for (size_t i = 0; i < _table_size; i++) {
+            // Adiciona cada par (chave, valor) ao vetor de chaves ordenadas
+            for (const auto& p : (*_table)[i]) {
+                _sorted_keys.push_back(p);
+            }
+        }
+
+        // Ordena o vetor de chaves ordenadas usando o comparador
+        std::sort(
+            _sorted_keys.begin(), _sorted_keys.end(),
+            [this](const std::pair<key, int>& a, const std::pair<key, int>& b) {
+                return _compare(a.first, b.first);
+            });
+
+        _keys_dirty = false;
+    }
+
    public:
-    // Construtor padrão da tabela hash com tamanho inicial e função de hash
-    hash_table(size_t table_size = 19, const hash& hf = hash())
+    // Construtor padrão com tamanho inicial, função de hash e functor de
+    // comparação
+    hash_table(size_t table_size = 19, const hash& hf = hash(),
+               const compare& c = compare())
         : _number_of_elements(0),
-          _table_size(table_size),
-          _table(new std::vector<std::list<std::pair<key, int>>>(table_size)),
-          _load_factor(0.0),
+          _table_size(get_next_prime(table_size)),
+          _comparisons(0),
+          _table(new std::vector<std::list<std::pair<key, int>>>(_table_size)),
+          _load_factor(0),
           _max_load_factor(0.75),
           _hashing(hf),
-          _comparisons(0) {}
+          _compare(c),
+          _sorted_keys(),
+          _keys_dirty(true) {}
 
-    // Construtor de cópia
-    hash_table(const hash_table& t)
-        : _number_of_elements(t._number_of_elements),
-          _table_size(t._table_size),
-          _table(new std::vector<std::list<std::pair<key, int>>>(*t._table)),
-          _load_factor(t._load_factor),
-          _max_load_factor(t._max_load_factor),
-          _hashing(t._hashing),
-          _comparisons(t._comparisons) {}
+    // Contrutor de cópia
+    hash_table(const hash_table& ht)
+        : _number_of_elements(ht._number_of_elements),
+          _table_size(ht._table_size),
+          _comparisons(ht._comparisons),
+          _table(new std::vector<std::list<std::pair<key, int>>>(*ht._table)),
+          _load_factor(ht._load_factor),
+          _max_load_factor(ht._max_load_factor),
+          _hashing(ht._hashing),
+          _compare(ht._compare),
+          _sorted_keys(ht._sorted_keys),
+          _keys_dirty(ht._keys_dirty) {}
 
-    // Sobrecarga do operador de atribuição
-    hash_table& operator=(const hash_table& t) {
-        if (this == &t) return *this;  // Verifica auto-atribuição
+    // Operador de atribuição
+    hash_table& operator=(const hash_table& ht) {
+        if (this == &ht) {
+            return *this;
+        }
 
-        // Libera a memória da tabela antiga
-        delete _table;
-
-        // Copia o número de elementos e o tamanho da tabela
-        _number_of_elements = t._number_of_elements;
-        _table_size = t._table_size;
-
-        // Cria uma nova tabela e copia os elementos
-        _table = new std::vector<std::list<std::pair<key, int>>>(*t._table);
-
-        _load_factor = t._load_factor;          // Copia o fator de carga atual
-        _max_load_factor = t._max_load_factor;  // Copia o fator de carga máximo
-        _hashing = t._hashing;                  // Copia a função de hash
+        _number_of_elements = ht._number_of_elements;
+        _table_size = ht._table_size;
+        _comparisons = ht._comparisons;
+        _table = new std::vector<std::list<std::pair<key, int>>>(*ht._table);
+        _load_factor = ht._load_factor;
+        _max_load_factor = ht._max_load_factor;
+        _hashing = ht._hashing;
+        _compare = ht._compare;
+        _sorted_keys = ht._sorted_keys;
+        _keys_dirty = ht._keys_dirty;
 
         return *this;
     }
@@ -127,44 +169,44 @@ class hash_table {
     // Retorna o número de elementos na tabela hash
     size_t size() const { return _number_of_elements; }
 
-    // Retorna true se a tabela hash estiver vazia
+    // Verifica se a tabela hash está vazia
     bool empty() const { return _number_of_elements == 0; }
 
     // Retorna o número de slots (buckets) na tabela hash
     size_t bucket_count() const { return _table_size; }
 
-    // Retorna o número de elementos no slot (bucket) n da tabela hash
+    // Retorna o número de elementos em um slot (bucket) específico
     size_t bucket_size(size_t n) const { return (*_table)[n].size(); }
 
-    // Retorna o slot (bucket) da tabela hash onde a chave k deve ser
-    // armazenada
+    // Retorna o índice do slot (bucket) de uma chave k
     size_t bucket(const key& k) const { return hash_code(k); }
 
     // Limpa todos os elementos da tabela hash
     void clear() {
-        // Limpa todas as listas de pares chave-valor na tabela
+        // Limpa cada bucket da tabela hash
         for (size_t i = 0; i < _table_size; i++) {
             (*_table)[i].clear();
         }
 
-        // Reseta o número de elementos
+        // Reseta o número de elementos e a flag de chaves desatualizadas
         _number_of_elements = 0;
+        _keys_dirty = true;
     }
 
-    // Calcula o fator de carga atual da tabela hash
+    // Retorna o fator de carga atual
     float load_factor() const {
         return static_cast<float>(_number_of_elements) / _table_size;
     }
 
-    // Retorna o fator de carga máximo da tabela hash
+    // Retorna o fator de carga máximo
     float max_load_factor() const { return _max_load_factor; }
 
-    // Define o fator de carga máximo da tabela hash
+    // Define o fator de carga máximo
     void max_load_factor(float lf) { _max_load_factor = lf; }
 
-    // Define o fator de carga atual e redimensiona a tabela se necessário
+    // Define o fator de carga atual e faz rehashing se necessário
     void load_factor(float lf) {
-        // Verifica se o fator de carga está fora do intervalo permitido
+        // Verifica se o fator de carga está fora do intervalo
         _comparisons++;
         if (lf <= 0 || lf > _max_load_factor) {
             throw std::out_of_range("Out of range load factor");
@@ -179,9 +221,9 @@ class hash_table {
         }
     }
 
-    // Insere a chave k com um valor associado na tabela hash
+    // Insere a chave k na tabela hash
     bool insert(const key& k) {
-        // Verifica se o fator de carga excede o máximo permitido
+        // Verifica se o fator de carga excedeu o máximo
         _comparisons++;
         if (load_factor() > _max_load_factor) {
             rehash(2 * _table_size);
@@ -195,17 +237,19 @@ class hash_table {
         for (auto& p : (*_table)[i]) {
             _comparisons++;
             if (p.first == k) {
-                p.second++;
-                return false;
+                p.second++;          // Incrementa a frequência da chave
+                _keys_dirty = true;  // Marca as chaves como desatualizadas
+                return false;        // Chave já existe, não insere
             }
             _comparisons++;
         }
         _comparisons++;
 
-        // Adiciona a chave e o valor no slot correspondente
-        (*_table)[hash_code(k)].push_back(std::make_pair(k, 1));
-        _number_of_elements++;
-        return true;  // A chave foi adicionada, retorna true
+        // Insere a chave k com frequência 1 na lista do slot correspondente
+        (*_table)[i].push_back(std::make_pair(k, 1));
+        _number_of_elements++;  // Incrementa o número de elementos
+        _keys_dirty = true;     // Marca as chaves como desatualizadas
+        return true;            // Chave inserida com sucesso
     }
 
     // Verifica se a chave k está na tabela hash
@@ -213,13 +257,13 @@ class hash_table {
         // Calcula o índice da tabela hash para a chave k
         size_t i = hash_code(k);
 
+        // Itera para encontrar a chave k na lista do slot correspondente
         for (const auto& p : (*_table)[i]) {
             if (p.first == k) {
-                return true;  // A chave foi encontrada
+                return true;  // Chave encontrada
             }
         }
-
-        return false;  // A chave não foi encontrada
+        return false;  // Chave não encontrada
     }
 
     // Remove a chave k da tabela hash
@@ -232,19 +276,20 @@ class hash_table {
         for (auto it = (*_table)[i].begin(); it != (*_table)[i].end(); ++it) {
             _comparisons++;
             if (it->first == k) {
-                (*_table)[i].erase(it);  // Remove a chave do slot
+                (*_table)[i].erase(it);  // Remove a chave da lista
                 _number_of_elements--;   // Decrementa o número de elementos
-                return true;             // A chave foi removida
+                _keys_dirty = true;      // Marca as chaves como desatualizadas
+                return true;             // Chave removida com sucesso
             }
             _comparisons++;
         }
         _comparisons++;
 
-        return false;  // A chave não foi encontrada
+        return false;  // Chave não encontrada, não remove
     }
 
-    // Retorna o valor associado à chave k
-    int& at(const key& k) {
+    // Retorna a frequência da chave k
+    unsigned int freq(const key& k) const {
         // Calcula o índice da tabela hash para a chave k
         size_t i = hash_code(k);
 
@@ -259,25 +304,9 @@ class hash_table {
         throw std::out_of_range("Key not found");
     }
 
-    // Retorna o valor associado à chave k (Versão const)
-    const int& at(const key& k) const {
-        // Calcula o índice da tabela hash para a chave k
-        size_t i = hash_code(k);
-
-        // Itera para encontrar a chave k na lista do slot correspondente
-        for (const auto& p : (*_table)[i]) {
-            if (p.first == k) {
-                return p.second;
-            }
-        }
-
-        // Se a chave não foi encontrada, lança uma exceção
-        throw std::out_of_range("Key not found");
-    }
-
-    // Sobrecarga do operador de indexação para acessar ou modificar o valor da
-    // chave k
-    int& operator[](const key& k) {
+    // Sobrecarga do operador de indexação para acessar ou modificar o valor
+    // associado à chave k
+    unsigned int& operator[](const key& k) {
         // Calcula o índice da tabela hash para a chave k
         size_t i = hash_code(k);
 
@@ -292,19 +321,20 @@ class hash_table {
         }
         _comparisons++;
 
-        // Adiciona a chave e o valor no slot correspondente
-        (*_table)[i].push_back(std::make_pair(k, 0));
-        _number_of_elements++;
+        // Insere a chave k com frequência 1 na lista do slot correspondente
+        (*_table)[i].push_back(std::make_pair(k, 1));
+        _number_of_elements++;  // Incrementa o número de elementos
+        _keys_dirty = true;     // Marca as chaves como desatualizadas
         return (*_table)[i].back().second;
     }
 
-    // Sobrecarga do operador de indexação para acessar o valor associado à
+    // Sobrecarga do operador de indexação constante para acessar o valor da
     // chave k (Versão const)
-    const int& operator[](const key& k) const { return at(k); }
+    const unsigned int& operator[](const key& k) const { return freq(k); }
 
     // Redimensiona a tabela hash para um novo tamanho
     void rehash(size_t new_size) {
-        // Se o novo tamanho for menor ou igual ao tamanho atual, não faz nada
+        // Se o novo tamanho for menor ou igual ao atual, não faz nada
         _comparisons++;
         if (new_size <= _table_size) {
             return;
@@ -313,7 +343,7 @@ class hash_table {
         // Encontra o próximo número primo maior ou igual ao novo tamanho
         new_size = get_next_prime(new_size);
 
-        // Cria uma nova tabela com o novo tamanho
+        // Cria uma nova tabela hash com o novo tamanho
         auto new_table =
             new std::vector<std::list<std::pair<key, int>>>(new_size);
 
@@ -324,6 +354,7 @@ class hash_table {
             for (const auto& p : bucket) {
                 size_t index = _hashing(p.first) % new_size;
                 (*new_table)[index].push_back(p);
+                _comparisons++;
             }
             _comparisons++;
         }
@@ -332,75 +363,95 @@ class hash_table {
         delete _table;           // Libera a memória da tabela antiga
         _table = new_table;      // Atualiza o ponteiro para a nova tabela
         _table_size = new_size;  // Atualiza o tamanho da tabela
+        _keys_dirty = true;      // Marca as chaves como desatualizadas
     }
-    // Classe iterador para a tabela hash
+
+    // Classe de iterador para percorrer as chaves da tabela hash
+    // O Iterador não acessa diretamente a tabela hash, mas sim um vetor de
+    // chaves ordenadas
     class iterator {
        private:
-        size_t _index;             // Índice atual do slot na tabela
-        const hash_table* _table;  // Ponteiro para a tabela hash
-
-        // Iterador para a lista de pares chave-valor no slot atual
-        typename std::list<std::pair<key, int>>::iterator _it;
-
-        void advance_to_next_nonempty() {
-            // Avança para o próximo slot não vazio
-            while (_index < _table->_table_size &&
-                   (*_table->_table)[_index].empty()) {
-                ++_index;
-            }
-
-            // Se o índice for menor que o tamanho da tabela, obtém o iterador
-            // se não, cria um iterador vazio
-            if (_index < _table->_table_size) {
-                _it = (*_table->_table)[_index].begin();
-            } else {
-                _it = typename std::list<std::pair<key, int>>::iterator();
-            }
-        }
+        const hash_table* _ht;  // Ponteiro para a tabela hash
+        size_t _index;          // Índice atual do vetor de chaves ordenadas
 
        public:
         // Construtor do iterador
-        iterator(size_t index, const hash_table* table)
-            : _index(index), _table(table) {
-            if (_index < _table->_table_size) {
-                _it = (*_table->_table)[_index].begin();
-                advance_to_next_nonempty();
-            }
+        iterator(const hash_table* ht, size_t index) : _ht(ht), _index(index) {}
+
+        // Sobrecarga do operador de desreferência para acessar o par (chave,
+        // valor)
+        const std::pair<key, int>& operator*() const {
+            return _ht->_sorted_keys[_index];
         }
 
-        // Sobrecarga do operador de pré-incremento (++it)
+        // Sobrecarga do operador de incremento para avançar o iterador
         iterator& operator++() {
-            if (_index >= _table->_table_size) {
-                return *this;
-            }
-
-            ++_it;
-
-            if (_it == (*_table->_table)[_index].end()) {
-                ++_index;
-                advance_to_next_nonempty();
-            }
+            _index++;
             return *this;
         }
 
-        // Sobrecarga do operador de diferença (it1 != it2)
-        bool operator!=(const iterator& other) const {
-            return _index != other._index || _it != other._it;
+        // Sobrecarga do operador de desigualdade para comparar dois iteradores
+        bool operator!=(const iterator& it) const {
+            return _index != it._index;
         }
 
-        // Sobrecarga do operador de indireção (*it)
-        const std::pair<key, int>& operator*() const { return *_it; }
-
-        // Sobrecarga do operador de seta (it->first)
-        const std::pair<key, int>* operator->() const { return &(*_it); }
+        // Sobrecarga do operador de seta para acessar o ponteiro para o par
+        const std::pair<key, int>* operator->() const {
+            return &_ht->_sorted_keys[_index];
+        }
     };
 
-    // Retorna um iterador para o início da tabela hash
-    iterator begin() const { return iterator(0, this); }
+    // Retorna um iterador para o início do vetor de chaves ordenadas
+    iterator begin() {
+        // Se o vetor de chaves ordenadas estiver desatualizado, atualiza
+        if (_keys_dirty) {
+            update_sorted_keys();
+        }
 
-    // Retorna um iterador para o final da tabela hash
-    iterator end() const { return iterator(_table_size, this); }
+        // Cria um iterador para o início do vetor de chaves ordenadas
+        return iterator(this, 0);
+    }
 
-    // Retorna o número de comparações realizadas
+    // Retorna um iterador para o final do vetor de chaves ordenadas
+    iterator end() {
+        // Se o vetor de chaves ordenadas estiver desatualizado, atualiza
+        if (_keys_dirty) {
+            update_sorted_keys();
+        }
+
+        // Cria um iterador para o final do vetor de chaves ordenadas
+        return iterator(this, _sorted_keys.size());
+    }
+
+    // Retorna o número de comparações feitas
     unsigned int comparisons() const { return _comparisons; }
+
+    // Atualiza a frequência de uma chave (Se freq = 0, remove a chave)
+    void att(const key& k, int att) {
+        // Calcula o índice da tabela hash para a chave k
+        size_t i = hash_code(k);
+
+        // Itera para encontrar a chave k na lista do slot correspondente
+        _comparisons++;
+        for (auto it = (*_table)[i].begin(); it != (*_table)[i].end(); ++it) {
+            _comparisons++;
+            if (it->first == k) {
+                // Se a frequência for 0, remove a chave
+                _comparisons++;
+                if (att == 0) {
+                    (*_table)[i].erase(it);  // Remove a chave da lista
+                    _number_of_elements--;  // Decrementa o número de elementos
+                    _keys_dirty = true;  // Marca as chaves como desatualizadas
+                    return;
+                }
+
+                // Atualiza a frequência da chave
+                it->second = att;
+                _keys_dirty = true;  // Marca as chaves como desatualizadas
+                return;
+            }
+            _comparisons++;
+        }
+        _comparisons++;
+    }
 };

@@ -58,13 +58,12 @@ class dictionary {
     }
 
     // Atualiza a frequência de uma palavra
-    // void att(const icu::UnicodeString& word, int att) { _dict.att(word, att);
-    // }
+    void att(const icu::UnicodeString& word, int att) { _dict.att(word, att); }
 
     // Retorna a frequência de uma palavra
-    // unsigned int freq(const icu::UnicodeString& word) {
-    //    return _dict.freq(word);
-    // }
+    unsigned int freq(const icu::UnicodeString& word) {
+        return _dict.freq(word);
+    }
 
     // Retorna uma lista das palavras do dicionário com suas frequências
     icu::UnicodeString list() {
@@ -86,7 +85,7 @@ class dictionary {
 
     void save(const std::string& filename, std::chrono::milliseconds duration) {
         std::string list_str = "";
-        // std::string comparisons = std::to_string(_dict.comparisons());
+        std::string comparisons = std::to_string(_dict.comparisons());
         list_str +=
             "Tamanho do dicionário: " + std::to_string(this->size()) + "\n";
         list_str +=
