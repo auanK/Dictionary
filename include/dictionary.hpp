@@ -26,20 +26,33 @@ class dictionary {
 
     // Insere um texto no dicionário (o texto já deve estar formatado, contendo
     // apenas espaços e palavras)
-    void insert_text(const icu::UnicodeString& text) {
+    void insert_text(icu::UnicodeString text) {
+        // Adiciona um espaço no final do texto para garantir que a última
+        // palavra será inserida
+        text += " ";
+
+        // Percorre o texto, separando as palavras e inserindo no dicionário
         icu::UnicodeString word;
         for (int i = 0; i < text.length(); i++) {
+            // Obtém o caractere na posição i
             UChar32 c = text.char32At(i);
+            // Caso o caractere seja um espaço em branco, insere a palavra
+            // anterior ao espaço no dicionário
             if (u_isUWhiteSpace(c)) {
                 if (!word.isEmpty()) {
+                    // Se a palavra não for vazia, insere no dicionário
                     this->insert(word);
+                    // Limpa a palavra e prepara para a próxima
                     word.remove();
                 }
             } else {
+                // Não é um espaço em branco, adiciona o caractere à palavra
+                // atual
                 word += c;
             }
         }
     }
+
     // Remove uma palavra do dicionário
     void remove(const icu::UnicodeString& word) { _dict.remove(word); }
 

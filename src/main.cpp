@@ -28,7 +28,8 @@ int main(int argc, char* argv[]) {
         process_and_save_dict(dict, filename, mode_structure);
 
     } else if (mode_structure == "dictionary_hash") {
-        dictionary<hash_table<UnicodeString, hash_unicode>> dict;
+        dictionary<hash_table<UnicodeString, hash_unicode, unicode_compare>>
+            dict;
         process_and_save_dict(dict, filename, mode_structure);
     } else {
         cerr << "Error: Invalid mode of structure" << endl;
