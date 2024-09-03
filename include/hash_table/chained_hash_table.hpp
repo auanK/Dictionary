@@ -21,7 +21,7 @@ struct hash_unicode {
 // encadeamento exterior
 template <typename key_t, typename value_t, typename hash = std::hash<key_t>,
           typename compare = std::less<key_t>>
-class hash_table {
+class chained_hash_table {
    private:
     size_t _number_of_elements;  // Número de elementos na tabela hash
     size_t _table_size;          // Tamanho atual da tabela hash
@@ -114,7 +114,7 @@ class hash_table {
    public:
     // Construtor padrão com tamanho inicial, função de hash e functor de
     // comparação
-    hash_table(size_t table_size = 19, const hash& hf = hash())
+    chained_hash_table(size_t table_size = 19, const hash& hf = hash())
         : _number_of_elements(0),
           _table_size(get_next_prime(table_size)),
           _comparisons(0),
@@ -128,7 +128,7 @@ class hash_table {
           _keys_dirty(true) {}
 
     // Destrutor da tabela hash
-    ~hash_table() {
+    ~chained_hash_table() {
         clear();
         delete _table;
     }
@@ -374,12 +374,13 @@ class hash_table {
     // chaves ordenadas
     class iterator {
        private:
-        const hash_table* _ht;  // Ponteiro para a tabela hash
-        size_t _index;          // Índice atual do vetor de chaves ordenadas
+        const chained_hash_table* _ht;  // Ponteiro para a tabela hash
+        size_t _index;  // Índice atual do vetor de chaves ordenadas
 
        public:
         // Construtor do iterador
-        iterator(const hash_table* ht, size_t index) : _ht(ht), _index(index) {}
+        iterator(const chained_hash_table* ht, size_t index)
+            : _ht(ht), _index(index) {}
 
         // Sobrecarga do operador de desreferência para acessar o par (chave,
         // valor)

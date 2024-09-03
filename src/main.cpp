@@ -27,9 +27,9 @@ int main(int argc, char* argv[]) {
         dictionary<red_black_tree<UnicodeString, int, unicode_compare>> dict;
         process_and_save_dict(dict, filename, mode_structure);
 
-    } else if (mode_structure == "dictionary_hash") {
-        dictionary<
-            hash_table<UnicodeString, int, hash_unicode, unicode_compare>>
+    } else if (mode_structure == "dictionary_chained_hash") {
+        dictionary<chained_hash_table<UnicodeString, int, hash_unicode,
+                                      unicode_compare>>
             dict;
         process_and_save_dict(dict, filename, mode_structure);
     } else {

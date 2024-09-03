@@ -85,7 +85,9 @@ void write_file(const std::string &file_path, const std::string &content) {
 void display_usage(const char *program_name) {
     cerr << "Uso: " << program_name
          << " <modo_estrutura> <arquivo(deve estar na pasta in)>" << endl;
-    cerr << "Modos de estrutura: dictionary_avl, dictionary_rb" << endl;
+    cerr << "Modos de estrutura: dictionary_avl, dictionary_rb, "
+            "dictionary_chained_hash"
+         << endl;
 }
 
 template <typename dict_type>
