@@ -2,23 +2,18 @@
 
 #include <iostream>
 
-// Definições para as cores dos nós na árvore rubro-negra
 #define RED false
 #define BLACK true
 
-// Estrutura que define um nó da árvore rubro-negra
-template <typename type>
+template <typename key_t, typename value_t>
 struct rb_node {
-    type key;           // Chave do nó
-    unsigned int freq;  // Frequência da chave
-    bool color;         // Cor do nó (RED ou BLACK)
-    rb_node *left;         // Ponteiro para o filho esquerdo
-    rb_node *right;        // Ponteiro para o filho direito
-    rb_node *parent;       // Ponteiro para o nó pai
+    std::pair<key_t, value_t> key;  // Par de chave e valor
+    bool color;                     // Cor do nó (RED ou BLACK)
+    rb_node* left;                  // Ponteiro para o filho esquerdo
+    rb_node* right;                 // Ponteiro para o filho direito
+    rb_node* parent;                // Ponteiro para o nó pai
 
-    // Construtor para inicializar um nó com uma chave, cor, e ponteiros para o
-    // filho esquerdo, direito e o pai
-    rb_node(type key, bool color = RED, rb_node *left = nullptr, rb_node *right = nullptr,
-         rb_node *parent = nullptr)
-        : key(key), freq(1), color(color), left(left), right(right), parent(parent) {}
+    rb_node(const key_t& k, const value_t& v, bool c = RED,
+            rb_node* l = nullptr, rb_node* r = nullptr, rb_node* p = nullptr)
+        : key(std::make_pair(k, v)), color(c), left(l), right(r), parent(p) {}
 };

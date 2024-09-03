@@ -22,7 +22,14 @@ class dictionary {
     dictionary() {}
 
     // Insere uma palavra no dicionário
-    void insert(const icu::UnicodeString& word) { _dict.insert(word); }
+    void insert(const icu::UnicodeString& word) {
+        try {
+            auto value = _dict.search(word);
+            _dict.att(word, value + 1);
+        } catch (std::out_of_range& e) {
+            _dict.insert(word, 1);
+        }
+    }
 
     // Insere um texto no dicionário (o texto já deve estar formatado, contendo
     // apenas espaços e palavras)
@@ -116,11 +123,6 @@ class dictionary {
 
         write_file(filename, list_str);
     }
-
-    // Exibe o dicionário em forma de árvore
-    // Método temporário (Para testes da AVL e Red-Black)
-
-    // void show() { _dict.show(); }
 
     unsigned int comparisons() { return _dict.comparisons(); }
 };

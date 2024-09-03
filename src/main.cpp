@@ -21,14 +21,15 @@ int main(int argc, char* argv[]) {
     string filename = argv[2];
 
     if (mode_structure == "dictionary_avl") {
-        dictionary<avl_tree<UnicodeString, unicode_compare>> dict;
+        dictionary<avl_tree<UnicodeString, int, unicode_compare>> dict;
         process_and_save_dict(dict, filename, mode_structure);
     } else if (mode_structure == "dictionary_rb") {
-        dictionary<red_black_tree<UnicodeString, unicode_compare>> dict;
+        dictionary<red_black_tree<UnicodeString, int, unicode_compare>> dict;
         process_and_save_dict(dict, filename, mode_structure);
 
     } else if (mode_structure == "dictionary_hash") {
-        dictionary<hash_table<UnicodeString, hash_unicode, unicode_compare>>
+        dictionary<
+            hash_table<UnicodeString, int, hash_unicode, unicode_compare>>
             dict;
         process_and_save_dict(dict, filename, mode_structure);
     } else {

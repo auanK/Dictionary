@@ -1,19 +1,13 @@
 #pragma once
+#include <utility>  
 
-template <typename type>
+template <typename key_t, typename value_t>
 struct node {
-    type key;             // Chave do nó
-    unsigned int freq;    // Frequência em que a chave aparece
-    unsigned int height;  //  Altura do nó
-    node* left;           // Ponteiro para o filho esquerdo
-    node* right;          // Ponteiro para o filho direito
+    std::pair<key_t, value_t> key;  
+    node* left;
+    node* right;
+    int height;
 
-    // Construtor
-    node(type key) {
-        this->key = key;
-        this->freq = 1;
-        this->height = 1;
-        this->left = nullptr;
-        this->right = nullptr;
-    }
+    node(key_t k, value_t v)
+        : key(std::make_pair(k, v)), left(nullptr), right(nullptr), height(1) {}
 };

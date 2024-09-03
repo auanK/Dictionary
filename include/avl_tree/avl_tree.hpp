@@ -11,43 +11,36 @@
 
 using namespace icu;
 
-// Árvore AVL genérica, caso o compare não seja passado, usa o default_compare
-template <typename type, typename compare = default_compare<type>>
+template <typename key_t, typename value_t, typename compare = std::less<key_t>>
 class avl_tree {
    private:
-    node<type>* _root = nullptr;    // Raiz da árvore
-    unsigned int _size = 0;         // Número de nós na árvore
-    compare _compare;               // Functor de comparação
-    unsigned int _comparisons = 0;  // Número de comparações feitas
+    node<key_t, value_t>* _root = nullptr;  // Raiz da árvore
+    unsigned int _size = 0;                 // Número de nós na árvore
+    compare _compare;                       // Functor de comparação
+    unsigned int _comparisons = 0;          // Número de comparações feitas
 
-    // Limpa a árvore, percorrendo os nós em pós-ordem
-    void _clear(node<type>* root) {
-        _comparisons++;
-        if (root == nullptr) {
+    void _clear(node<key_t, value_t>* n) {
+        if (n == nullptr) {
             return;
         }
-
-        _clear(root->left);
-        _clear(root->right);
-        delete root;
+        _clear(n->left);
+        _clear(n->right);
+        delete n;
     }
 
-    // Retorna a altura de um nó
-    int _height(node<type>* n) const {
+    int _height(node<key_t, value_t>* n) const {
         if (n == nullptr) {
             return 0;
         }
         return n->height;
     }
 
-    // Calcula o fator de balanceamento de um nó
-    int _balance(node<type>* n) const {
+    int _balance(node<key_t, value_t>* n) const {
         return _height(n->right) - _height(n->left);
     }
 
-    // Rotaciona a subárvore à direita
-    node<type>* _right_rotation(node<type>* p) {
-        node<type>* u = p->left;
+    node<key_t, value_t>* _right_rotation(node<key_t, value_t>* p) {
+        node<key_t, value_t>* u = p->left;
         p->left = u->right;
         u->right = p;
 
@@ -57,9 +50,8 @@ class avl_tree {
         return u;
     }
 
-    // Rotaciona a subárvore à esquerda
-    node<type>* _left_rotation(node<type>* p) {
-        node<type>* u = p->right;
+    node<key_t, value_t>* _left_rotation(node<key_t, value_t>* p) {
+        node<key_t, value_t>* u = p->right;
         p->right = u->left;
         u->left = p;
 
@@ -69,58 +61,51 @@ class avl_tree {
         return u;
     }
 
-    // Insere um nó na árvore
-    node<type>* _insert(node<type>* p, type key) {
-        // Se chegou em uma folha, insere o nó e incrementa o tamanho da árvore
-        //
+    node<key_t, value_t>* _insert(node<key_t, value_t>* p, key_t k, value_t v) {
         _comparisons++;
         if (p == nullptr) {
             _size++;
-            return new node<type>(key);
+            return new node<key_t, value_t>(k, v);
         }
 
         _comparisons++;
-        // Busca binária para encontrar a posição correta do nó
-        if (_compare(key, p->key)) {
-            p->left = _insert(p->left, key);
-        } else if (_compare(p->key, key)) {
+        if (_compare(k, p->key.first)) {
+            p->left = _insert(p->left, k, v);
+        } else if (_compare(p->key.first, k)) {
             _comparisons++;
-            p->right = _insert(p->right, key);
+            p->right = _insert(p->right, k, v);
         } else {
-            p->freq++;
+            p->key.second += v;
             return p;
         }
 
-        // Corrige o balanceamento do nó
-        p = _fixup_node(p, key);
-
+        p = _fixup_node(p, k);
         return p;
     }
 
-    // Corrige o balanceamento de um nó após uma inserção
-    node<type>* _fixup_node(node<type>* p, type key) {
+    node<key_t, value_t>* _fixup_node(node<key_t, value_t>* p, key_t k) {
         p->height = 1 + std::max(_height(p->left), _height(p->right));
 
         int bal = _balance(p);
 
         _comparisons++;
-        if (bal < -1 && _compare(key, p->left->key)) {
+        if (bal < -1 && _compare(k, p->left->key.first)) {
             return _right_rotation(p);
         }
 
         _comparisons++;
-        if (bal < -1 && _compare(p->left->key, key)) {
+        if (bal < -1 && _compare(p->left->key.first, k)) {
             p->left = _left_rotation(p->left);
             return _right_rotation(p);
         }
 
         _comparisons++;
-        if (bal > 1 && _compare(p->right->key, key)) {
+        if (bal > 1 && _compare(p->right->key.first, k)) {
             return _left_rotation(p);
         }
 
         _comparisons++;
-        if (bal > 1 && _compare(key, p->right->key)) {
+        if (bal > 1 && _compare(k, p->right->key.first)) {
             p->right = _right_rotation(p->right);
             return _left_rotation(p);
         }
@@ -128,22 +113,20 @@ class avl_tree {
         return p;
     }
 
-    // Remove um nó da árvore
-    node<type>* _remove(node<type>* n, type key) {
+    node<key_t, value_t>* _remove(node<key_t, value_t>* n, key_t k) {
         _comparisons++;
         if (n == nullptr) {
             return nullptr;
         }
 
-        _comparisons++;
-        if (_compare(key, n->key)) {
-            n->left = _remove(n->left, key);
-        } else if (_compare(n->key, key)) {
+        if (_compare(k, n->key.first)) {
+            n->left = _remove(n->left, k);
+        } else if (_compare(n->key.first, k)) {
             _comparisons++;
-            n->right = _remove(n->right, key);
+            n->right = _remove(n->right, k);
         } else if (n->right == nullptr) {
             _comparisons++;
-            node<type>* temp = n->left;
+            node<key_t, value_t>* temp = n->left;
             delete n;
             _size--;
             return temp;
@@ -153,18 +136,17 @@ class avl_tree {
         }
 
         n = _fixup_deletion(n);
-
         return n;
     }
 
-    // Remove o sucessor de um nó
-    node<type>* _remove_successor(node<type>* n, node<type>* successor) {
+    node<key_t, value_t>* _remove_successor(node<key_t, value_t>* n,
+                                            node<key_t, value_t>* successor) {
         _comparisons++;
         if (successor->left != nullptr) {
             successor->left = _remove_successor(n, successor->left);
         } else {
             n->key = successor->key;
-            node<type>* temp = successor->right;
+            node<key_t, value_t>* temp = successor->right;
             delete successor;
             return temp;
         }
@@ -172,8 +154,7 @@ class avl_tree {
         return successor;
     }
 
-    // Corrige o balanceamento de um nó após uma remoção
-    node<type>* _fixup_deletion(node<type>* n) {
+    node<key_t, value_t>* _fixup_deletion(node<key_t, value_t>* n) {
         _comparisons++;
         if (n == nullptr) {
             return nullptr;
@@ -183,23 +164,19 @@ class avl_tree {
 
         int bal = _balance(n);
 
-        _comparisons++;
         if (bal > 1 && _balance(n->right) >= 0) {
             return _left_rotation(n);
         }
 
-        _comparisons++;
         if (bal > 1 && _balance(n->right) < 0) {
             n->right = _right_rotation(n->right);
             return _left_rotation(n);
         }
 
-        _comparisons++;
         if (bal < -1 && _balance(n->left) <= 0) {
             return _right_rotation(n);
         }
 
-        _comparisons++;
         if (bal < -1 && _balance(n->left) > 0) {
             n->left = _left_rotation(n->left);
             return _right_rotation(n);
@@ -208,164 +185,36 @@ class avl_tree {
         return n;
     }
 
-    // Busca uma chave na árvore
-    node<type>* _search(node<type>* n, type key) {
+    node<key_t, value_t>* _search(node<key_t, value_t>* n, key_t k) {
         _comparisons++;
         if (n == nullptr) {
             return nullptr;
         }
 
         _comparisons++;
-        if (!_compare(key, n->key) && !_compare(n->key, key)) {
+        if (!_compare(k, n->key.first) && !_compare(n->key.first, k)) {
             return n;
         }
 
         _comparisons++;
-        if (_compare(key, n->key)) {
-            return _search(n->left, key);
+        if (_compare(k, n->key.first)) {
+            return _search(n->left, k);
         }
-        return _search(n->right, key);
-    }
-
-    // Retorna uma string com as chaves da árvore em ordem alfabética
-    std::string _list(node<type>* n) {
-        if (n == nullptr) {
-            return "";
-        }
-
-        std::string list = _list(n->left);
-
-        // Em tempo de compilação, verifica se o tipo é UnicodeString para
-        // fazer a conversão correta
-        if constexpr (std::is_same<type, icu::UnicodeString>::value) {
-            std::string utf8_string;
-            n->key.toUTF8String(utf8_string);
-            list += utf8_string + " (" + std::to_string(n->freq) + ") \n";
-        } else {
-            list += n->key + " (" + std::to_string(n->freq) + ") \n";
-        }
-
-        list += _list(n->right);
-
-        return list;
-    }
-
-    // Imprime a árvore na tela
-    void bshow(node<type>* n, std::string heranca) {
-        if (n != nullptr && (n->left != nullptr || n->right != nullptr)) {
-            bshow(n->right, heranca + "r");
-        }
-        for (int i = 0; i < (int)heranca.size() - 1; i++) {
-            std::cout << (heranca[i] != heranca[i + 1] ? "│   " : "    ");
-        }
-        if (heranca != "") {
-            std::cout << (heranca.back() == 'r' ? "┌───" : "└───");
-        }
-        if (n == nullptr) {
-            std::cout << "#" << std::endl;
-            return;
-        }
-
-        // Em tempo de compilação, verifica se o tipo é UnicodeString para
-        // imprimir corretamente
-        if constexpr (std::is_same<type, icu::UnicodeString>::value) {
-            std::string utf8_string;
-            n->key.toUTF8String(utf8_string);
-            std::cout << utf8_string << " (" << n->freq << ")" << std::endl;
-        } else {
-            std::cout << n->key << " (" << n->freq << ")" << std::endl;
-        }
-
-        if (n != nullptr && (n->left != nullptr || n->right != nullptr)) {
-            bshow(n->left, heranca + "l");
-        }
+        return _search(n->right, k);
     }
 
    public:
-    // Construtor com suporte para passar um functor de comparação
-    // Se não for passado, usa o default_compare
-    avl_tree(compare comp = compare()) : _compare(comp) {
-        _root = nullptr;
-        _size = 0;
-    }
+    // Construtor da árvore
+    avl_tree() : _compare(compare()) {}
 
-    // Destrutor
-    ~avl_tree() {
-        _clear(_root);
-        if constexpr (std::is_same_v<compare, unicode_compare>) {
-            delete _compare.collator;
-        }
-    }
+    // Destruidor da árvore
+    ~avl_tree() { _clear(_root); }
 
-    class iterator {
-       private:
-        node<type>* _current;            // Nó atual
-        std::stack<node<type>*> _stack;  // Pilha para percorrer a árvore
-        std::pair<type, unsigned int>
-            _current_pair;  // Membro para armazenar o par
+    // Insere uma chave e valor na árvore
+    void insert(key_t k, value_t v) { _root = _insert(_root, k, v); }
 
-        // Função auxiliar para empilhar os nós da subárvore esquerda
-        void push_left(node<type>* n) {
-            while (n != nullptr) {
-                _stack.push(n);
-                n = n->left;
-            }
-        }
-
-       public:
-        // Construtor do iterador
-        iterator(node<type>* root) : _current(nullptr) {
-            push_left(root);
-            if (!_stack.empty()) {
-                _current = _stack.top();
-                _stack.pop();
-                _current_pair = {_current->key,
-                                 _current->freq};  // Inicializa o par
-            }
-        }
-
-        // Retorna o std::pair atual
-        std::pair<type, unsigned int> operator*() const {
-            return _current_pair;
-        }
-
-        // Avança o iterador para o próximo nó
-        iterator& operator++() {
-            if (_current != nullptr) {
-                if (_current->right != nullptr) {
-                    push_left(_current->right);
-                }
-                if (!_stack.empty()) {
-                    _current = _stack.top();
-                    _stack.pop();
-                    _current_pair = {_current->key,
-                                     _current->freq};  // Atualiza o par
-                } else {
-                    _current = nullptr;
-                    _current_pair = {};  // Reseta o par
-                }
-            }
-            return *this;
-        }
-
-        // Verifica se o iterador chegou ao fim
-        bool operator!=(const iterator& other) const {
-            return _current != other._current;
-        }
-
-        // Retorna um ponteiro para o std::pair atual
-        std::pair<type, unsigned int>* operator->() { return &_current_pair; }
-    };
-
-    // Funções begin e end para iniciar e terminar o iterador
-    iterator begin() { return iterator(_root); }
-    iterator end() { return iterator(nullptr); }
-
-    // Insere um nó na árvore
-    void insert(type key) { _root = _insert(_root, key); }
-
-    // Remove um nó da árvore
-    void remove(type key) { _root = _remove(_root, key); }
+    // Remove uma chave da árvore
+    void remove(key_t k) { _root = _remove(_root, k); }
 
     // Limpa a árvore
     void clear() {
@@ -374,48 +223,96 @@ class avl_tree {
         _size = 0;
     }
 
-    // Retorna o tamanho da árvore
-    unsigned int size() { return _size; }
+    // Retorna o número de nós na árvore
+    unsigned int size() const { return _size; }
 
-    // Verifica se a árvore está vazia
+    // Retorna se a árvore está vazia
     bool empty() const { return _size == 0; }
 
-    // Retorna a altura da árvore
-    unsigned int height() const { return _height(_root); }
-
-    // Verifica se a árvore contém uma chave
-    bool contains(type key) { return _search(_root, key) != nullptr; }
-
-    // Retorna a frequência de uma chave(0 se não existir)
-    unsigned int freq(type key) {
-        node<type>* n = _search(_root, key);
-        if (n == nullptr) {
-            return 0;
+    // Busca por uma chave na árvore
+    value_t search(key_t k) {
+        node<key_t, value_t>* n = _search(_root, k);
+        _comparisons++;
+        if (n != nullptr) {
+            return n->key.second;
         }
 
-        return n->freq;
+        throw std::out_of_range("Key not found");
     }
 
-    // Atualiza a frequência de uma chave
-    void att(type key, unsigned int new_freq) {
-        node<type>* n = _search(_root, key);
-        if (n == nullptr) {
+    // Verifica se uma chave está na árvore
+    bool contains(key_t k) { return _search(_root, k) != nullptr; }
+
+    // Atualiza o valor associado a uma chave
+    void att(key_t k, value_t v) {
+        node<key_t, value_t>* n = _search(_root, k);
+
+        _comparisons++;
+        if (n != nullptr) {
+            n->key.second = v;
             return;
         }
 
-        if (new_freq == 0) {
-            _root = _remove(_root, key);
-        } else {
-            n->freq = new_freq;
-        }
+        throw std::out_of_range("Key not found");
     }
 
-    // Retorna uma string com as chaves da árvore em ordem alfabética
-    std::string list() { return _list(_root); }
+    // Classe iterador
+    class iterator {
+       private:
+        std::stack<node<key_t, value_t>*> _stack;
+        node<key_t, value_t>* _current;
 
-    // Imprime a árvore na tela em formato de árvore binária
-    void show() { bshow(_root, ""); }
+        void _push_left(node<key_t, value_t>* n) {
+            while (n != nullptr) {
+                _stack.push(n);
+                n = n->left;
+            }
+        }
 
-    // Retorna o número de comparações feitas
+       public:
+        iterator(node<key_t, value_t>* root) : _current(nullptr) {
+            _push_left(root);
+            if (!_stack.empty()) {
+                _current = _stack.top();
+                _stack.pop();
+            }
+        }
+
+        iterator& operator++() {
+            if (_current == nullptr) {
+                return *this;
+            }
+
+            if (_current->right != nullptr) {
+                _push_left(_current->right);
+            }
+
+            if (_stack.empty()) {
+                _current = nullptr;
+            } else {
+                _current = _stack.top();
+                _stack.pop();
+            }
+            return *this;
+        }
+
+        bool operator!=(const iterator& other) const {
+            return _current != other._current;
+        }
+
+        const std::pair<key_t, value_t>& operator*() const {
+            return _current->key;
+        }
+
+        const std::pair<key_t, value_t>* operator->() const {
+            return &_current->key;
+        }
+    };
+
+    iterator begin() { return iterator(_root); }
+
+    iterator end() { return iterator(nullptr); }
+
+    // Retorna o número de comparações realizadas
     unsigned int comparisons() const { return _comparisons; }
 };
