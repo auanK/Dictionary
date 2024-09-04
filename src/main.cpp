@@ -3,8 +3,10 @@
 #include <iostream>
 
 #include "../include/avl_tree/avl_tree.hpp"
+#include "../include/compare.hpp"
 #include "../include/dictionary.hpp"
 #include "../include/hash_table/chained_hash_table.hpp"
+#include "../include/hash_table/open_hash_table.hpp"
 #include "../include/rb_tree/red_black_tree.hpp"
 #include "utils.cpp"
 
@@ -16,23 +18,41 @@ int main(int argc, char* argv[]) {
         display_usage(argv[0]);
         return 1;
     }
+
     // Salva o modo de estrutura e o nome do arquivo
     string mode_structure = argv[1];
     string filename = argv[2];
 
+    // Dicionário utilizando uma árvore AVL
     if (mode_structure == "dictionary_avl") {
         dictionary<avl_tree<UnicodeString, int, unicode_compare>> dict;
         process_and_save_dict(dict, filename, mode_structure);
-    } else if (mode_structure == "dictionary_rb") {
+
+    }
+
+    // Dicionário utilizando uma árvore rubro-negra
+    else if (mode_structure == "dictionary_rb") {
         dictionary<red_black_tree<UnicodeString, int, unicode_compare>> dict;
         process_and_save_dict(dict, filename, mode_structure);
 
-    } else if (mode_structure == "dictionary_chained_hash") {
+    }
+
+    // Dicionário utilizando uma tabela hash com encadeamento exterior
+    else if (mode_structure == "dictionary_chained_hash") {
         dictionary<chained_hash_table<UnicodeString, int, hash_unicode,
                                       unicode_compare>>
             dict;
         process_and_save_dict(dict, filename, mode_structure);
-    } else {
+
+        // Dicionário utilizando tabela hash com endereçamento aberto
+    } else if (mode_structure == "dictionary_open_hash") {
+        dictionary<
+            open_hash_table<UnicodeString, int, hash_unicode, unicode_compare>>
+            dict;
+        process_and_save_dict(dict, filename, mode_structure);
+    }
+
+    else {
         cerr << "Error: Invalid mode of structure" << endl;
         display_usage(argv[0]);
         return 1;

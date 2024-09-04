@@ -81,16 +81,14 @@ class dictionary {
     void att(const icu::UnicodeString& word, int att) { _dict.att(word, att); }
 
     // Retorna a frequência de uma palavra
-    unsigned int freq(const icu::UnicodeString& word) {
-        return _dict.freq(word);
-    }
+    int search(const icu::UnicodeString& word) { return _dict.search(word); }
 
     // Retorna uma lista das palavras do dicionário com suas frequências
     icu::UnicodeString list() {
         icu::UnicodeString list;
-        for (auto it = _dict.begin(); it != _dict.end(); ++it) {
-            list += "\"" + it->first + "\" - " +
-                    icu::UnicodeString::fromUTF8(std::to_string(it->second)) +
+        for (auto pair : _dict) {
+            list += "\"" + pair.first + "\" - " +
+                    icu::UnicodeString::fromUTF8(std::to_string(pair.second)) +
                     "\n";
         }
         return list;

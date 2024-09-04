@@ -6,17 +6,6 @@
 #include <utility>
 #include <vector>
 
-// Função de hash para strings Unicode
-struct hash_unicode {
-    size_t operator()(const UnicodeString& s) const {
-        size_t hash = 0;
-        for (int i = 0; i < s.length(); i++) {
-            hash = 31 * hash + s[i];
-        }
-        return hash;
-    }
-};
-
 // Classe que implementa uma tabela hash com tratamento de colisão por
 // encadeamento exterior
 template <typename key_t, typename value_t, typename hash = std::hash<key_t>,
@@ -150,15 +139,12 @@ class chained_hash_table {
     // Retorna o fator de carga máximo
     float max_load_factor() const { return _max_load_factor; }
 
-    // Define o fator de carga máximo
-    void max_load_factor(float lf) { _max_load_factor = lf; }
-
     // Define o fator de carga atual e faz rehashing se necessário
     void load_factor(float lf) {
         // Verifica se o fator de carga está fora do intervalo
         _comparisons++;
         if (lf <= 0 || lf > _max_load_factor) {
-            throw std::out_of_range("Out of range load factor");
+            throw std::out_of_range("load factor out of range");
         }
 
         _load_factor = lf;  // Atualiza o fator de carga
@@ -168,6 +154,15 @@ class chained_hash_table {
         if (load_factor() > _load_factor) {
             rehash(2 * _table_size);
         }
+    }
+
+    // Define o fator de carga máximo
+    void max_load_factor(float lf) {
+        if (lf <= 0 || lf < _load_factor) {
+            throw std::out_of_range("max load factor out of range");
+        }
+
+        _max_load_factor = lf;
     }
 
     // Redimensiona a tabela hash para um novo tamanho
