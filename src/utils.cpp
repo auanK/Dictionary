@@ -113,9 +113,5 @@ void process_and_save_dict(dict_type &dict, const string &filename,
 }
 
 struct hash_unicode {
-    size_t operator()(const UnicodeString &s) const {
-        std::string utf8str;
-        s.toUTF8String(utf8str);
-        return std::hash<std::string>{}(utf8str);
-    }
+    size_t operator()(const UnicodeString &s) const { return s.hashCode(); }
 };

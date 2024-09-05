@@ -14,28 +14,22 @@ class chained_hash_table {
    private:
     size_t _number_of_elements;  // Número de elementos na tabela hash
     size_t _table_size;          // Tamanho atual da tabela hash
-    unsigned int _comparisons;   // Número de comparações realizadas
 
     // Vetor de listas de pares (chave, valor)
     std::vector<std::list<std::pair<key_t, value_t>>>* _table;
 
-    // Fator de carga atual da tabela hash
-    float _load_factor;
-
-    // Fator de carga máximo permitido antes da rehashing
-    float _max_load_factor;
-
-    // Função de hash para gerar índices de tabela
-    hash _hashing;
-
-    // Functor de comparação
-    compare _compare;
+    float _load_factor;      // Fator de carga atual da tabela hash
+    float _max_load_factor;  // Fator de carga máximo permitido
+    hash _hashing;           // Função de hash para gerar índices de tabela
+    compare _compare;        // Functor de comparação
 
     // Vetor de chaves ordenadas (para iteradores)
     std::vector<std::pair<key_t, value_t>> _sorted_keys;
 
     // Flag para indicar se o vetor de chaves ordenadas está desatualizado
     bool _keys_dirty;
+
+    unsigned int _comparisons;  // Número de comparações realizadas
 
     // Encontra o próximo número primo maior ou igual a x
     size_t get_next_prime(size_t x) {
@@ -97,12 +91,11 @@ class chained_hash_table {
                       return _compare(a.first, b.first);
                   });
 
-        _keys_dirty = false;
+        _keys_dirty = false;  // Marca as chaves como atualizadas
     }
 
    public:
-    // Construtor padrão com tamanho inicial, função de hash e functor de
-    // comparação
+    // Construtor da tabela hash
     chained_hash_table(size_t table_size = 19, const hash& hf = hash())
         : _number_of_elements(0),
           _table_size(get_next_prime(table_size)),
@@ -158,11 +151,12 @@ class chained_hash_table {
 
     // Define o fator de carga máximo
     void max_load_factor(float lf) {
+        // Verifica se o fator de carga máximo está fora do intervalo
+        _comparisons++;
         if (lf <= 0 || lf < _load_factor) {
             throw std::out_of_range("max load factor out of range");
         }
-
-        _max_load_factor = lf;
+        _max_load_factor = lf;  // Atualiza o fator de carga máximo
     }
 
     // Redimensiona a tabela hash para um novo tamanho
