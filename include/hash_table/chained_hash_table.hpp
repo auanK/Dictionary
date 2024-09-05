@@ -262,8 +262,8 @@ class chained_hash_table {
     // Verifica se a tabela hash está vazia
     bool empty() const { return _number_of_elements == 0; }
 
-    // Busca o valor associado à chave k na tabela hash
-    value_t search(const key_t& k) {
+    // Retorna a referência para o valor associado à chave k
+    value_t& search(const key_t& k) {
         // Calcula o índice da tabela hash para a chave k
         size_t i = hash_code(k);
 

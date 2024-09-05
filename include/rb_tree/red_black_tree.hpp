@@ -385,8 +385,8 @@ class red_black_tree {
     // Verifica se a árvore está vazia
     bool empty() const { return _size == 0; }
 
-    // Retorna o valor associado à chave k
-    value_t search(const key_t& k) {
+    // Retorna a referência para o valor associado a uma chave
+    value_t& search(const key_t& k) {
         rb_node<key_t, value_t>* node = _search(_root, k);
         _comparisons++;
         if (node != _nil) {

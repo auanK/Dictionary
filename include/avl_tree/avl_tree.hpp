@@ -229,8 +229,8 @@ class avl_tree {
     // Retorna se a árvore está vazia
     bool empty() const { return _size == 0; }
 
-    // Busca por uma chave na árvore
-    value_t search(key_t k) {
+    // Retorna a referência para o valor associado a uma chave
+    value_t& search(key_t k) {
         node<key_t, value_t>* n = _search(_root, k);
         _comparisons++;
         if (n != nullptr) {

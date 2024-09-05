@@ -275,8 +275,8 @@ class open_hash_table {
     // Verifica se a tabela hash está vazia
     bool empty() const { return _number_of_elements == 0; }
 
-    // Busca o valor associado à chave k na tabela hash
-    value_t search(const key_t &k) {
+    // Retorna a referência para o valor associado a uma chave
+    value_t &search(const key_t &k) {
         // Itera para encontrar a chave k na tabela hash
         size_t i = 0;
         size_t index;

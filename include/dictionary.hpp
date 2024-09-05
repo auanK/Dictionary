@@ -25,7 +25,7 @@ class dictionary {
     void insert(const icu::UnicodeString& word) {
         try {
             auto value = _dict.search(word);
-            _dict.att(word, value + 1);
+            value += 1;
         } catch (std::out_of_range& e) {
             _dict.insert(word, 1);
         }
