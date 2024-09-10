@@ -75,7 +75,6 @@ class avl_tree {
             _comparisons++;
             p->right = _insert(p->right, k, v);
         } else {
-            p->key.second += v;
             return p;
         }
 
