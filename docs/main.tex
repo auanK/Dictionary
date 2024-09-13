@@ -1,0 +1,284 @@
+\documentclass{article}
+\usepackage[a4paper,margin=3cm]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\newcommand{\trabalhoTitulo}{\textbf{Contagem de Frequências Usando Estruturas de Dados}}
+\newcommand{\disciplina}{Estrutura de Dados Avançada}
+\newcommand{\professor}{Atílio Gomes Luiz}
+\newcommand{\autor}{Kauan Pablo de Sousa Silva}
+\newcommand{\data}{\today} 
+
+\title{Universidade Federal do Ceará - Campus Quixadá \\ \disciplina \\ Prof. \professor}
+\author{\autor}
+\date{\data}
+
+\begin{document}
+
+\maketitle
+
+\section*{\trabalhoTitulo}
+\href{https://github.com/auanK/Dictionary}{\underline{Repositório do Projeto no GitHub}}
+
+\section*{01. Introdução}
+
+O objetivo deste trabalho é o desenvolvimento de uma aplicação em C++ para calcular a frequência de palavras em um texto e imprimir essas palavras em ordem alfabética, com suas respectivas frequências. O projeto deve receber um arquivo de texto, converter todas as letras para minúsculas, remover acentos e caracteres especiais, e em seguida utilizar uma das estruturas de dados implementadas para armazenar as palavras e contar suas frequências.
+
+As estruturas de dados implementadas incluem duas árvores (AVL e Rubro-Negra) e duas tabelas hash (encadeamento externo e endereçamento aberto). Também será realizada uma análise de desempenho entre essas estruturas de dados com base no tempo de execução e no número de comparações realizadas.
+
+
+\section*{02. Estruturas de Dados Implementadas}
+As estruturas de dados são do tipo genérico e podem ser utilizadas para armazenar pares de chaves e valores.
+As principais operações usadas no projeto seguem um padrão comum entre as estruturas de dados implementadas, entre elas estão:
+\begin{itemize}
+    \item \texttt{insert(key, value)}: insere um par chave-valor na estrutura de dados.
+    \item \texttt{remove(key)}: remove um par chave-valor da estrutura de dados.  (Lança uma exceção se a chave não for encontrada)
+    \item \texttt{search(key)}: retorna uma referência ao valor associado a uma chave na estrutura de dados. (Lança uma exceção se a chave não for encontrada)
+    \item \texttt{att(key, value)}: atualiza o valor associado a uma chave na estrutura de dados. (Lança uma exceção se a chave não for encontrada)
+    \item \texttt{size()}: retorna o número de pares chave-valor na estrutura de dados.	
+    \item \texttt{empty()}: retorna verdadeiro se a estrutura de dados estiver vazia, falso caso contrário.
+    \item \texttt{begin()}: retorna um iterador para o primeiro par chave-valor na estrutura de dados.
+    \item \texttt{end()}: retorna um iterador para o último par chave-valor na estrutura de dados. \end{itemize}
+O iterador das estruturas percorre os elementos em ordem crescente de acordo com o valor da chave.
+\subsection*{02.1 Árvore AVL}
+
+Árvore AVL é um árvore binária de busca balanceada onde, para cada nó, a diferença entre as alturas de suas subárvores esquerda e direita é no máximo 1. Esse balanceio permite que as operações de busca, inserção e remoção de elementos tenham complexidade de tempo de \(\displaystyle O(\log n)\).
+
+
+\subsection*{02.2 Árvore Rubro-Negra}
+
+Árvore Rubro-Negra é uma árvore binária de busca balanceada que segue cinco propriedades:
+\begin{enumerate}
+    \item Cada nó é vermelho ou preto.
+    \item A raiz é preta.
+    \item Cada folha (NIL) é preta.
+    \item Se um nó é vermelho, então seus filhos são pretos.
+    \item Para cada nó, todos os caminhos de um nó para folhas descendentes contêm o mesmo número de nós pretos.
+\end{enumerate}
+Essas propriedades garantem que a árvore esteja balanceada e que as operações de busca, inserção e remoção de elementos tenham complexidade de tempo de \(\displaystyle O(\log n)\).
+A inserção e remoção de elementos em uma árvore Rubro-Negra costumam ser mais eficientes que em uma árvore AVL, pois a árvore Rubro-Negra é menos rígida em relação ao balanceamento necessitando de menos rotações para manter suas propriedades.
+Em relação a busca, a árvore AVL é mais eficiente para procurar chaves por manter um balanceamento mais rígido, mesmo que a complexidade também seja \(\displaystyle O(\log n)\).
+
+\subsection*{02.3 Tabela Hash com Encadeamento Externo}
+
+A Tabela Hash com Encadeamento Externo utiliza uma função de hash para mapear chaves em índices de uma tabela. Quando acontece uma colisão
+(duas chaves são mapeadas para o mesmo lugar) a tabela armazena em uma lista que contém todos os pares chave-valor que colidiram naquele índice. 
+As operações de inserção, busca e remoção têm complexidade de tempo de \(\displaystyle O(1)\) em média, mas podem chegar a \(\displaystyle O(n)\) no pior caso,
+quanto melhor  a função de hash, menor a chance de colisões correrem e maior é a eficiência da tabela.
+
+
+\subsection*{02.4 Tabela Hash com Endereçamento Aberto (Hashing Duplo)}
+A Tabela Hash com Endereçamento Aberto implementada utiliza a estraégia de Hashing Duplo para resolver colisões.
+A função hash é calculada utilizando duas funções de hash, uma principal e outra secundária, quando ocorre uma colisão um deslocamento 
+é feito ao chamar chamar a função de hash com o número de colisões ocorridas até encontrar um índice vazio.
+As operações de inserção, busca e remoção têm complexidade de tempo de \(\displaystyle O(1)\) em média, mas podem chegar a \(\displaystyle O(n)\) no pior caso. Apesar de ser um pouco mais complexa de implementar em relação a tabela com encadeamento externo, a tabela com endereçamento aberto utiliza menos memória pelo fato de não precisar armazenar ponteiros para listas encadeadas.
+
+\section*{03. Sistema Implementado}
+
+A classe \texttt{dictionary} gerencia quatro estruturas de dados e utiliza um tipo genérico \texttt{type}, que deve assumir uma das quatro estruturas implementadas. A seguir estão os principais métodos da classe.
+\begin{itemize}
+    \item \texttt{void insert(const icu::UnicodeString\& word);}
+    \begin{quote}
+        Insere uma palavra no dicionário. A função tenta atribuir à variável \texttt{auto} o valor retornado por \texttt{search(key)}. Se a chave já existir, o valor é incrementado para refletir uma nova ocorrência da palavra. Caso o \texttt{search} lance uma exceção (indicando que a chave não existe), um novo par (key, 1) é inserido na estrutura de dados.
+    \end{quote}
+
+    \item \texttt{void insert\_text(icu::UnicodeString text);}
+    \begin{quote}
+        Recebe um texto (idealmente já formatado para o trabalho) e o divide em palavras, inserindo cada uma no dicionário usando o método \texttt{insert}. Palavras separadas por hífen são consideradas como uma só.
+    \end{quote}
+
+    \item \texttt{void remove(const icu::UnicodeString\& word);}
+    \begin{quote}
+        Remove uma palavra do dicionário. (Lança uma exceção se a palavra não for encontrada)
+    \end{quote}
+
+    \item \texttt{void clear();}
+    \begin{quote}
+        Limpa o dicionário, removendo todas as palavras e suas respectivas frequências.
+    \end{quote}
+
+    \item \texttt{unsigned int size();}
+    \begin{quote}
+        Retorna a quantidade de palavras diferentes presentes no dicionário.
+    \end{quote}
+
+    \item \texttt{bool empty();}
+    \begin{quote}
+        Verifica se o dicionário está vazio, retornando \texttt{true} se não contiver palavras e \texttt{false} caso contrário.
+    \end{quote}
+
+    \item \texttt{bool contains(const icu::UnicodeString\& word);}
+    \begin{quote}
+        Verifica se uma palavra está presente no dicionário.
+    \end{quote}
+
+    \item \texttt{void att(const icu::UnicodeString\& word, int att);}
+    \begin{quote}
+        Atualiza a frequência de uma palavra no dicionário. (Lança uma exceção se a palavra não for encontrada)
+    \end{quote}
+
+    \item \texttt{int search(const icu::UnicodeString\& word);}
+    \begin{quote}
+        Retorna a frequência de uma palavra no dicionário. (Lança uma exceção se a palavra não for encontrada)
+    \end{quote}
+
+    \item \texttt{icu::UnicodeString list();}
+    \begin{quote}
+        Utiliza o iterador das estruturas de dados para percorrer as estruturas e adicionar cada par de chave-valor a uma variável do tipo \texttt{icu::UnicodeString}. As palavras e suas frequências são listadas em ordem crescente, conforme implementado pelos iteradores das quatro estruturas de dados.
+    \end{quote}
+
+    \item \texttt{void print();}
+    \begin{quote}
+        Imprime o dicionário, mostrando palavras e suas frequências no console.
+    \end{quote}
+
+    \item \texttt{void save(const std::string\& filename, std::chrono::milliseconds duration);}
+    \begin{quote}
+        Salva o conteúdo do dicionário em um arquivo, incluindo o tamanho do dicionário, o número de comparações realizadas e o tempo gasto para montar a tabela.
+    \end{quote}
+
+    \item \texttt{unsigned int comparisons();}
+    \begin{quote}
+        Retorna o número de comparações realizadas durante as operações no dicionário.
+    \end{quote}
+\end{itemize}
+
+\section*{04. Dificuldades para Implementação}
+\begin{itemize}
+    \item \textbf{Manipulação de Strings Unicode}: A principal dificuldade encontrada durante o projeto foi a manipulação de strings Unicode. A biblioteca ICU, que contém a \texttt{ICU::UnicodeString}, foi utilizada para lidar com as strings, a própria documentação não é muito clara mas em compensação as funções da biblioteca em si são bem fáceis de usar, a parte mais complexa foi aprender a utilizar o \texttt{ICU::Collator} para comparar as strings em ordem lexicográfica, pois a biblioteca não possui uma função de comparação direta para esse caso, sendo necessário usar um objeto \texttt{Collator} dentro de uma função de comparação customizada.
+    \item \textbf{Hashing Duplo}: A implementação da tabela hash com endereçamento aberto utilizando a técnica de hashing duplo foi a mais complexa de implementar, pois o cálculo da nova posição de uma chave quando a tabela vai ser redimensionada é um pouco mais complexo que o cálculo de uma função de hash comum, sendo necessário calcular a nova posição da chave a partir da posição original e do número de colisões que ocorreram até encontrar um índice vazio.
+\end{itemize}
+
+\section*{05. Testes Realizados}
+
+O programa foi testado com diferentes arquivos de texto para verificar o desempenho das estruturas de dados implementadas, dentre os teste realizados estão:
+
+
+\subsection*{05.1 \texttt{biblia\_sagrada\_english.txt} (5.649.985 caracteres)}
+
+\begin{itemize}
+    \item \textbf{Árvore AVL:}
+    \begin{itemize}
+        \item Tamanho do dicionário: 16388
+        \item Número de comparações: 31752346
+        \item Tempo de execução: 754 ms
+    \end{itemize}
+    
+    \item \textbf{Árvore Rubro-Negra:}
+    \begin{itemize}
+        \item Tamanho do dicionário: 16388
+        \item Número de comparações: 22929095
+        \item Tempo de execução: 498 ms
+    \end{itemize}
+    
+    \item \textbf{Tabela Hash (Encadeamento Externo):}
+    \begin{itemize}
+        \item Tamanho do dicionário: 16388
+        \item Número de comparações: 2583772
+        \item Tempo de execução: 176 ms
+    \end{itemize}
+    
+    \item \textbf{Tabela Hash (Endereçamento Aberto):}
+    \begin{itemize}
+        \item Tamanho do dicionário: 16388
+        \item Número de comparações: 2876367
+        \item Tempo de execução: 182 ms
+    \end{itemize}
+\end{itemize}
+
+\subsection*{05.2 \texttt{a\_riqueza\_das\_nacoes\_english.txt} (2.467.546 caracteres)}
+
+\begin{itemize}
+    \item \textbf{Árvore AVL:}
+    \begin{itemize}
+        \item Tamanho do dicionário: 10038
+        \item Número de comparações: 12102502
+        \item Tempo de execução: 295 ms
+    \end{itemize}
+    
+    \item \textbf{Árvore Rubro-Negra:}
+    \begin{itemize}
+        \item Tamanho do dicionário: 10038
+        \item Número de comparações: 8439015
+        \item Tempo de execução: 196 ms
+    \end{itemize}
+    
+    \item \textbf{Tabela Hash (Encadeamento Externo):}
+    \begin{itemize}
+        \item Tamanho do dicionário: 10038
+        \item Número de comparações: 1062040
+        \item Tempo de execução: 82 ms
+    \end{itemize}
+    
+    \item \textbf{Tabela Hash (Endereçamento Aberto):}
+    \begin{itemize}
+        \item Tamanho do dicionário: 10038
+        \item Número de comparações: 1100226
+        \item Tempo de execução: 80 ms
+    \end{itemize}
+\end{itemize}
+
+\subsection*{05.3 \texttt{memorias\_postumas\_de\_braz\_cubas.txt} (387.816 caracteres)}
+
+\begin{itemize}
+    \item \textbf{Árvore AVL:}
+    \begin{itemize}
+        \item Tamanho do dicionário: 11398
+        \item Número de comparações: 2984820
+        \item Tempo de execução: 82 ms
+    \end{itemize}
+    
+    \item \textbf{Árvore Rubro-Negra:}
+    \begin{itemize}
+        \item Tamanho do dicionário: 11398
+        \item Número de comparações: 1948424
+        \item Tempo de execução: 57 ms
+    \end{itemize}
+    
+    \item \textbf{Tabela Hash (Encadeamento Externo):}
+    \begin{itemize}
+        \item Tamanho do dicionário: 11398
+        \item Número de comparações: 270190
+        \item Tempo de execução: 31 ms
+    \end{itemize}
+    
+    \item \textbf{Tabela Hash (Endereçamento Aberto):}
+    \begin{itemize}
+        \item Tamanho do dicionário: 11398
+        \item Número de comparações: 274623
+        \item Tempo de execução: 32 ms
+    \end{itemize}
+\end{itemize}
+
+\section*{06. Conclusão}
+
+\section*{07. Referências}
+
+\begin{itemize}
+    \item Cplusplus.com. \textit{C++ STL Iterators}. Disponível em: \url{https://www.cplusplus.com/reference/iterator/}. 
+
+    \item Unicode Consortium. \textit{CharacterIterator}. Disponível em: \url{https://unicode-org.github.io/icu/userguide/strings/characteriterator.html}.
+    
+    \item Unicode Consortium. \textit{ICU API Reference: UnicodeString}. Disponível em: \url{https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1UnicodeString.html}.
+    
+    \item Unicode Consortium. \textit{ICU User Guide: Locale}. Disponível em: \url{https://unicode-org.github.io/icu/userguide/locale/}.
+    
+    \item Unicode Consortium. \textit{ICU User Guide: Collation}. Disponível em: \url{https://unicode-org.github.io/icu/userguide/collation/}.
+    
+    \item GeeksforGeeks. \textit{Inorder Tree Traversal without Recursion}. Disponível em: \url{https://www.geeksforgeeks.org/inorder-tree-traversal-without-recursion/}. 
+
+    \item Cormen, T. H., Leiserson, C. E., Rivest, R. L., Stein, C. \textit{Algoritmos: Teoria e Prática}. 3ª edição, Editora Campus, 2012. ISBN: 978-8535236996.
+    \begin{itemize}
+        \item Capítulo 11: Tabelas de Espalhamento.
+        \item Capítulo 13: Red-Black Trees.
+    \end{itemize}
+    
+    \item Jayme, M., Lilian, C. \textit{Estruturas de Dados e seus Algoritmos}. 3ª edição, Editora LTC, 2010. 
+    \begin{itemize}
+        \item Capítulo 5: Árvores Balanceadas
+        \item Capítulo 8: Tabelas de Dispersão.
+    \end{itemize}
+
+\end{itemize}
+
+\end{document}
