@@ -28,7 +28,7 @@ Para compilar o projeto, execute o seguinte comando na raiz do projeto:
 g++ src/main.cpp -std=c++17 -licuuc -licui18n
 ```
 
-Após isso, execute com o comando:
+Após isso, dentro da pasta `src` será gerado um arquivo `a.out`. Para executar o projeto, utilize o seguinte comando dentro da pasta `src`:
 
 ```bash
 ./a.out <estrutura_de_dado> <arquivo_de_entrada.txt>
@@ -40,6 +40,6 @@ Onde:
 
 ## Exemplo de execução
 ```bash
-./a.out dictionary_avl biblia_sagrada_english.txt
+./src/a.out dictionary_avl biblia_sagrada_english.txt
 ```
 Após essa execução a saída será um arquivo chamado dictionary_avl_biblia_sagrada_english.txt na pasta src/out.
