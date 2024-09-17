@@ -1,5 +1,5 @@
 # Dicionário de Frequência de Palavras
-Trabalho da cadeira de Estrutura de Dados Avançada do curso de Ciência da Computação da UFC - Campus Quixadá, lecionada pelo professor Atílio Gomes Luiz no semestre 2024.1. Feito pelo aluno [Kauan Pablo](github.com/auanK).
+Trabalho da cadeira de Estrutura de Dados Avançada do curso de Ciência da Computação da UFC - Campus Quixadá, lecionada pelo professor Atílio Gomes Luiz no semestre 2024.1. Feito pelo aluno [Kauan Pablo](https://github.com/auanK).
 
 ## Descrição do Projeto
 Este projeto consiste no desenvolvimento de uma aplicação em C++ para calcular a frequência de palavras em um texto, ordená-las alfabeticamente e realizar comparações de desempenho entre diferentes estruturas de dados usadas para armazenar essas palavras. O objetivo é analisar as métricas de desempenho dessas estruturas. Para mais detalhes, consulte o relatório disponível na pasta `docs`.
@@ -40,6 +40,6 @@ Onde:
 
 ## Exemplo de execução
 ```bash
-./src/a.out dictionary_avl biblia_sagrada_english.txt
+./a.out dictionary_avl biblia_sagrada_english.txt
 ```
 Após essa execução a saída será um arquivo chamado dictionary_avl_biblia_sagrada_english.txt na pasta src/out.
