@@ -6,8 +6,8 @@
 \newcommand{\trabalhoTitulo}{\textbf{Contagem de Frequências Usando Estruturas de Dados}}
 \newcommand{\disciplina}{Estrutura de Dados Avançada}
 \newcommand{\professor}{Atílio Gomes Luiz}
-\newcommand{\autor}{Kauan Pablo de Sousa Silva}
-\newcommand{\data}{\today} 
+\newcommand{\autor}{Kauan Pablo de Sousa Silva - 556027}
+\newcommand{\data}{17 de setembro, 2024}
 
 \title{Universidade Federal do Ceará - Campus Quixadá \\ \disciplina \\ Prof. \professor}
 \author{\autor}
@@ -18,13 +18,15 @@
 \maketitle
 
 \section*{\trabalhoTitulo}
-\href{https://github.com/auanK/Dictionary}{\underline{Repositório do Projeto no GitHub}}
+
+\href{https://github.com/auanK/Dictionary}
+{\underline{Repositório do Projeto no GitHub}}, contém o código completo da implementação, uma descrição detalhada dos requisitos do trabalho, e a documentação com instruções passo a passo para compilar e executar o projeto corretamente.
 
 \section*{01. Introdução}
 
-O objetivo deste trabalho é o desenvolvimento de uma aplicação em C++ para calcular a frequência de palavras em um texto e imprimir essas palavras em ordem alfabética, com suas respectivas frequências. O projeto deve receber um arquivo de texto, converter todas as letras para minúsculas, remover acentos e caracteres especiais, e em seguida utilizar uma das estruturas de dados implementadas para armazenar as palavras e contar suas frequências.
+O objetivo deste trabalho é o desenvolvimento de uma aplicação em C++ para calcular a frequência de palavras em um texto e imprimir essas palavras em ordem alfabética, com suas respectivas frequências. O projeto deve receber um arquivo de texto, converter todas as letras para minúsculas, remover caracteres especiais, e em seguida utilizar uma das estruturas de dados implementadas para armazenar as palavras e contar suas frequências.
 
-As estruturas de dados implementadas incluem duas árvores (AVL e Rubro-Negra) e duas tabelas hash (encadeamento externo e endereçamento aberto). Também será realizada uma análise de desempenho entre essas estruturas de dados com base no tempo de execução e no número de comparações realizadas.
+As estruturas de dados implementadas incluem duas árvores (AVL e Rubro-Negra) e duas tabelas hash (encadeamento externo e endereçamento aberto). Também é necessário fazer uma análise de desempenho entre essas estruturas de dados com base no tempo de execução e no número de comparações realizadas.
 
 
 \section*{02. Estruturas de Dados Implementadas}
@@ -40,6 +42,7 @@ As principais operações usadas no projeto seguem um padrão comum entre as est
     \item \texttt{begin()}: retorna um iterador para o primeiro par chave-valor na estrutura de dados.
     \item \texttt{end()}: retorna um iterador para o último par chave-valor na estrutura de dados. \end{itemize}
 O iterador das estruturas percorre os elementos em ordem crescente de acordo com o valor da chave.
+
 \subsection*{02.1 Árvore AVL}
 
 Árvore AVL é um árvore binária de busca balanceada onde, para cada nó, a diferença entre as alturas de suas subárvores esquerda e direita é no máximo 1. Esse balanceio permite que as operações de busca, inserção e remoção de elementos tenham complexidade de tempo de \(\displaystyle O(\log n)\).
@@ -64,17 +67,18 @@ Em relação a busca, a árvore AVL é mais eficiente para procurar chaves por m
 A Tabela Hash com Encadeamento Externo utiliza uma função de hash para mapear chaves em índices de uma tabela. Quando acontece uma colisão
 (duas chaves são mapeadas para o mesmo lugar) a tabela armazena em uma lista que contém todos os pares chave-valor que colidiram naquele índice. 
 As operações de inserção, busca e remoção têm complexidade de tempo de \(\displaystyle O(1)\) em média, mas podem chegar a \(\displaystyle O(n)\) no pior caso,
-quanto melhor  a função de hash, menor a chance de colisões correrem e maior é a eficiência da tabela.
+quanto melhor  a função de hash, menor a chance de colisões ocorrerem e maior é a eficiência da tabela. 
+O iterador da tabela percorre uma cópia dos elementos que estão em um vector ordenado.
 
 
 \subsection*{02.4 Tabela Hash com Endereçamento Aberto (Hashing Duplo)}
-A Tabela Hash com Endereçamento Aberto implementada utiliza a estraégia de Hashing Duplo para resolver colisões.
+A Tabela Hash com Endereçamento Aberto implementada utiliza a estratégia de Hashing Duplo para resolver colisões.
 A função hash é calculada utilizando duas funções de hash, uma principal e outra secundária, quando ocorre uma colisão um deslocamento 
-é feito ao chamar chamar a função de hash com o número de colisões ocorridas até encontrar um índice vazio.
+é feito ao chamar a função de hash com o número de colisões ocorridas até encontrar um índice vazio.
 As operações de inserção, busca e remoção têm complexidade de tempo de \(\displaystyle O(1)\) em média, mas podem chegar a \(\displaystyle O(n)\) no pior caso. Apesar de ser um pouco mais complexa de implementar em relação a tabela com encadeamento externo, a tabela com endereçamento aberto utiliza menos memória pelo fato de não precisar armazenar ponteiros para listas encadeadas.
+O iterador da tabela percorre uma cópia dos elementos que estão em um vector ordenado.
 
 \section*{03. Sistema Implementado}
-
 A classe \texttt{dictionary} gerencia quatro estruturas de dados e utiliza um tipo genérico \texttt{type}, que deve assumir uma das quatro estruturas implementadas. A seguir estão os principais métodos da classe.
 \begin{itemize}
     \item \texttt{void insert(const icu::UnicodeString\& word);}
@@ -142,6 +146,34 @@ A classe \texttt{dictionary} gerencia quatro estruturas de dados e utiliza um ti
         Retorna o número de comparações realizadas durante as operações no dicionário.
     \end{quote}
 \end{itemize}
+
+Agora aqui está um resumo de como foi a execução do projeto, após executar o programa, o arquivo de texto e a estrutura de dado escolhida é passada pelos argumentos do terminal, o programa cria um dicionário utilizando de template a estrutura escolhida, e logo após chama uma função auxiliar pra executar as operações.
+
+\begin {verbatim}
+template <typename dict_type>
+void process_and_save_dict(dict_type &dict, const string &filename,
+                           const string &mode_structure) {
+    // Processa o arquivo, removendo caracteres especiais e convertendo para minúsculas.
+    UnicodeString file = read_file("in/" + filename);
+
+    // Inicia a contagem do tempo e insere as palavras no dicionário
+    auto start = high_resolution_clock::now();
+    dict.insert_text(file);
+
+    // Finaliza a contagem do tempo e calcula a duração
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+
+    // Printa algumas informações sobre o dicionário
+    cout << "Tempo de execução: " << duration.count() << "ms" << endl;
+    // cout << dict.comparisons() << " comparações" << endl;
+
+    // Salva o dicionário no arquivo
+    string out_filename = "out/" + mode_structure + "_" + filename;
+    dict.save(out_filename, duration);
+}
+
+\end{verbatim}
 
 \section*{04. Dificuldades para Implementação}
 \begin{itemize}
@@ -251,6 +283,15 @@ O programa foi testado com diferentes arquivos de texto para verificar o desempe
 \end{itemize}
 
 \section*{06. Conclusão}
+Este trabalho permitiu fazer uma ánalise bem detalhada sobre o desempenho de diferentes estruturas de dados e suas vantagens ou desvantagens em relação ao trabalho, além de aprender a utilizar a biblioteca ICU para manipulação de strings Unicode.
+
+A árvore avl fez em média 1,45 vezes mais comparações em relação a rubro negra e executou em média 1,48 vezes mais devagar, isso se deve as operações de inserção e remoção em uma árvore avl que são operações mais custosas em relação a rubro negra, essa diferença seria ainda maior se não fosse considerado o tempo de pesquisa já que a árvore avl é um pouco mais eficiente que a rubro negra para pesquisar chaves(apesar de ambas terem complexidade de tempo de \(\displaystyle O(\log n)\)).
+
+As tabelas hashs foram as mais eficientes para a implementação do trabalho, as duas tiveram tempos de execução e número de comparações muito próximos que variavam de acordo com o ambiente de execução, então a escolha entre uma ou outra depende mais do contexto, no geral escolheria a tabela hash com endereçamento abertp por utilizar menos mémoria ao não precisar armazenar ponteiros para listas encadeadas.
+
+Em relação a rubro negra, as tabelas hash fizeram cerca de 8 vezes menos comparações e foram em média 2,3 vezes mais rápidas, entretanto o tempo de ordenação das chaves utilizada no iterator das tabelas hash não é considerado, então a diferença seria um pouco menor, mas mesmo assim no maior caso de teste (biblia\_sagrada\_english.txt) as tabelas hash aumentaram seu tempo de execução em aproximadamente apenas 60 ms, o que ainda é muito mais rápido que a rubro negra.
+
+Em resumo, para projetos onde a inserção e remoção são mais importantes que a iteração ordenada das chaves, as tabelas hash são a melhor escolha, mas se a iteração ordenada das chaves for mais importante e for feita rotineiramente, a árvore rubro negra é a melhor escolha.
 
 \section*{07. Referências}
 
